@@ -4,6 +4,10 @@ venv/
 ENV/
 env/
 
+# Python Cache
+__pycache__/
+*.py[cod]
+
 # Node dependencies & build outputs
 frontend/node_modules/
 frontend/dist/
