@@ -1,0 +1,25 @@
+# Environments
+venv/
+.venv/
+ENV/
+env/
+
+# Node dependencies & build outputs
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Database & SQLite files
+backend/gem_compliance.db
+*.sqlite3
+*.db
+
+# Uploads & Temporary files
+backend/uploads/*
+!backend/uploads/.gitkeep
+scratch/
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+*.log
