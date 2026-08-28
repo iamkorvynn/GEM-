@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Bell, Sparkles, LogOut } from 'lucide-react';
+import { Search, Bell, Sparkles, Users } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const ROLE_COLOR = {
@@ -134,12 +134,13 @@ export default function Topbar({ activeBidderId, setActiveBidderId, setCurrentTa
 
           {/* Logout */}
           <button
-            id="logout-btn"
+            id="switch-officer-btn"
             onClick={logout}
-            title="Sign out"
-            className="p-1.5 rounded-lg btn-glass-ghost transition flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-400"
+            title="Switch officer (GeM SSO simulation — returns to officer selector)"
+            className="p-1.5 rounded-lg btn-glass-ghost transition flex items-center gap-1.5 text-[10px] text-slate-500 hover:text-blue-400"
           >
-            <LogOut className="w-3.5 h-3.5" />
+            <Users className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Switch Officer</span>
           </button>
         </div>
       )}

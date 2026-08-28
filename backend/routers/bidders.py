@@ -26,7 +26,12 @@ from backend.services.verification_engine import (
     track_c_correlation, aggregate_verdict, MCA21_DATABASE
 )
 
+# NOTE: auth_service / get_current_user removed.
+# This is an officer-only tool — no bidder-facing auth or role-gating needed.
+# Officer identity is simulated via GeM SSO pass-through on the frontend.
+
 router = APIRouter(prefix="/api", tags=["Bidders & Dashboard"])
+
 
 
 # ---------------------------------------------------------------------------

@@ -18,6 +18,7 @@ import DocumentManagement from './pages/DocumentManagement';
 import GovVerificationView from './components/verification/GovVerificationView';
 import AuditTrailView from './pages/AuditTrailView';
 import ReportGenerator from './pages/ReportGenerator';
+import RiskAnalytics from './pages/RiskAnalytics';
 
 // ── Inner app (needs AuthContext available) ───────────────────────────────────
 function AppInner() {
@@ -48,7 +49,7 @@ function AppInner() {
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
         </svg>
-        Checking session…
+        Resolving GeM SSO session…
       </div>
     </div>
   );
@@ -114,11 +115,9 @@ function AppInner() {
               <div className="p-6"><GovVerificationView /></div>
             )}
             {currentTab === 'risk-overview' && (
-              <BidderComplianceDashboard
-                bidderId={activeBidderId}
-                onNavigateToReport={(id) => { setActiveBidderId(id); safeSetTab('reports'); }}
-                onRunVerificationTrigger={() => setIsDrawerOpen(true)}
-                showToast={showToast}
+              <RiskAnalytics
+                setCurrentTab={safeSetTab}
+                setActiveBidderId={(id) => { setActiveBidderId(id); }}
               />
             )}
             {currentTab === 'audit-trail' && <AuditTrailView />}

@@ -9,10 +9,11 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
     name = Column(String, nullable=False)
-    role = Column(String, default="Procurement Officer")
+    role = Column(String, default="Procurement Officer")  # Procurement Officer | Senior Manager | System Admin | Bidder
     department = Column(String, default="Central Procurement Dept")
     hashed_password = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+    bidder_id = Column(String, nullable=True)  # Set only for role=Bidder; links to Bidder.id
 
 class Tender(Base):
     __tablename__ = "tenders"

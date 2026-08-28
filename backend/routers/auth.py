@@ -1,85 +1,35 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
-from pydantic import BaseModel
-from typing import Optional
+"""
+auth.py — GeM SSO Pass-through stub
 
-from backend.database import get_db
-from backend.models.models import User
-from backend.services.auth_service import verify_password, create_access_token, decode_access_token
+In production, this tool would receive officer identity from GeM's own SSO
+(government employee ID / DSC). No independent authentication is needed here.
 
-router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+For the hackathon prototype, officer identity is selected on the frontend landing
+screen and stored in sessionStorage — no backend auth calls are made at all.
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+This router is kept as a stub so the /api/auth prefix remains registered and
+does not cause 404s if any legacy client hits it.
+"""
 
-# ── Schemas ─────────────────────────────────────────────────────────────────
-class LoginRequest(BaseModel):
-    email: str
-    password: str
+from fastapi import APIRouter
 
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str
-    user: dict
+router = APIRouter(prefix="/api/auth", tags=["Authentication (GeM SSO Stub)"])
 
-class UserOut(BaseModel):
-    id: int
-    email: str
-    name: str
-    role: str
-    department: str
 
-# ── Dependency: get current user from JWT ────────────────────────────────────
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    payload = decode_access_token(token)
-    if not payload:
-        raise credentials_exception
-    email: str = payload.get("sub")
-    if not email:
-        raise credentials_exception
-    user = db.query(User).filter(User.email == email).first()
-    if not user:
-        raise credentials_exception
-    return user
-
-# ── POST /api/auth/login ─────────────────────────────────────────────────────
-@router.post("/login", response_model=TokenResponse)
-def login(request: LoginRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == request.email).first()
-    if not user or not verify_password(request.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
-        )
-    token = create_access_token({
-        "sub": user.email,
-        "name": user.name,
-        "role": user.role,
-        "department": user.department,
-    })
+@router.get("/status")
+def auth_status():
+    """
+    Health-check endpoint for the auth layer.
+    In production: would validate the incoming GeM SSO session token.
+    In prototype: always returns the simulated-SSO confirmation.
+    """
     return {
-        "access_token": token,
-        "token_type": "bearer",
-        "user": {
-            "id": user.id,
-            "email": user.email,
-            "name": user.name,
-            "role": user.role,
-            "department": user.department,
-        }
+        "mode": "GeM SSO Pass-through (Prototype Simulation)",
+        "note": (
+            "Officer identity is received from the parent GeM session. "
+            "No independent login or JWT is issued by this tool. "
+            "Bidders do not authenticate here."
+        ),
+        "bidder_login": False,
+        "officer_sso": "simulated",
     }
-
-# ── GET /api/auth/me ──────────────────────────────────────────────────────────
-@router.get("/me", response_model=UserOut)
-def me(current_user: User = Depends(get_current_user)):
-    return current_user
-
-# ── POST /api/auth/logout  (client-side only — just signals intent) ───────────
-@router.post("/logout")
-def logout():
-    return {"message": "Logged out. Clear token client-side."}

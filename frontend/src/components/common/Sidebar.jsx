@@ -21,7 +21,7 @@ const menuGroups = [
   {
     title: 'Verification Engine',
     items: [
-      { id: 'documents',    label: 'Document Ingestion',  icon: FolderOpen },
+      { id: 'documents',    label: 'GeM Import (Sim.)',   icon: FolderOpen,   badge: 'MVP' },
       { id: 'govt-sources', label: 'Gov. Sources',        icon: Landmark,     badge: 'Mock' },
       { id: 'risk-overview',label: 'Risk Analytics',      icon: ShieldAlert },
     ]
@@ -122,7 +122,7 @@ export default function Sidebar({ currentTab, setCurrentTab }) {
             <div className="text-xs font-semibold text-slate-200 truncate">{user?.name || 'Guest'}</div>
             <div className="text-[10px] text-slate-500 truncate">{user?.role || ''}</div>
           </div>
-          <div className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 animate-pulse" />
+          <div className="ml-auto shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-md" style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', color: '#6ee7b7' }}>SSO</div>
         </div>
       </div>
     </aside>
