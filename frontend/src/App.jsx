@@ -105,9 +105,9 @@ function AppInner() {
             {currentTab === 'bidders' && (
               <BidderComplianceDashboard
                 bidderId={activeBidderId}
-                onNavigateToReport={(id) => { setActiveBidderId(id); safeSetTab('reports'); }}
-                onRunVerificationTrigger={() => setIsDrawerOpen(true)}
+                onSelectBidder={(id) => { setActiveBidderId(id); safeSetTab('bidder-profile'); }}
                 showToast={showToast}
+                setCurrentTab={safeSetTab}
               />
             )}
             {currentTab === 'documents' && <DocumentManagement activeBidderId={activeBidderId} />}

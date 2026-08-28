@@ -14,15 +14,15 @@ const menuGroups = [
     title: 'Bidder Verification',
     items: [
       { id: 'new-verification', label: 'New Verification',     icon: Plus },
-      { id: 'bidder-profile',   label: 'Bidder Profile',       icon: ClipboardList,  badge: 'Core' },
-      { id: 'bidders',          label: 'Legacy Dashboard',     icon: Users },
+      { id: 'bidder-profile',   label: 'Bidder Profile',       icon: ClipboardList },
+      { id: 'bidders',          label: 'Bid Compliance List',  icon: Users },
     ]
   },
   {
     title: 'Verification Engine',
     items: [
       { id: 'documents',    label: 'GeM Import (Sim.)',   icon: FolderOpen,   badge: 'MVP' },
-      { id: 'govt-sources', label: 'Gov. Sources',        icon: Landmark,     badge: 'Mock' },
+      { id: 'govt-sources', label: 'Gov. Sources',        icon: Landmark },
       { id: 'risk-overview',label: 'Risk Analytics',      icon: ShieldAlert },
     ]
   },

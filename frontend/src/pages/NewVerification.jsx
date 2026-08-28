@@ -35,7 +35,7 @@ export default function NewVerification({ onBidderCreated, showToast }) {
       });
       if (!res.ok) { const err = await res.json(); throw new Error(err.detail || 'Failed'); }
       const bidder = await res.json();
-      showToast('Bidder Created', `${bidder.company_name} registered. Registry pre-fetch complete.`, 'success');
+      showToast('Bid Added', `${bidder.company_name} added to review queue. Registry pre-fetch complete.`, 'success');
       onBidderCreated(bidder.id);
     } catch (err) { showToast('Error', err.message, 'error'); }
     finally { setLoading(false); }
@@ -78,7 +78,7 @@ export default function NewVerification({ onBidderCreated, showToast }) {
           {/* Info banner */}
           <div className="mt-4 p-3 rounded-xl text-xs text-blue-300 flex gap-2 items-start" style={{ background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.20)' }}>
             <svg className="w-4 h-4 shrink-0 mt-0.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            GST portal, Debarment Watchlist, and EPFO records will be pre-fetched automatically from mock government adapters on submit.
+            GST portal, Debarment Watchlist, and EPFO records will be pre-fetched automatically from government data adapters on submit.
           </div>
         </div>
 
@@ -206,12 +206,12 @@ export default function NewVerification({ onBidderCreated, showToast }) {
               {loading ? (
                 <>
                   <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                  Creating Bidder & Pre-fetching Registries…
+                  Adding to Queue…
                 </>
               ) : (
                 <>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  Register Bidder & Start Verification
+                  Add Bid to Review Queue
                 </>
               )}
             </button>

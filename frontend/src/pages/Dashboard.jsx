@@ -229,11 +229,11 @@ export default function Dashboard({ setCurrentTab, setActiveBidderId }) {
           <div className="absolute top-0 right-0 w-40 h-40 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)', filter: 'blur(30px)' }} />
 
           <div className="relative z-1">
-            <div className="text-[9px] font-bold tracking-widest uppercase text-amber-400 mb-2 flex items-center gap-1.5">
-              <ShieldCheck className="w-3 h-3" /> Judging Demo Launcher
+              <div className="text-[9px] font-bold tracking-widest uppercase text-amber-400 mb-2 flex items-center gap-1.5">
+              <ShieldCheck className="w-3 h-3" /> Quick Bid Review
             </div>
             <h3 className="text-sm font-bold text-white mb-1">5 Demo Scenarios</h3>
-            <p className="text-xs text-slate-500 mb-4 leading-relaxed">Each bidder tests a specific Track A/B/C detection pattern.</p>
+            <p className="text-xs text-slate-500 mb-4 leading-relaxed">Select any bid below to open its full compliance review.</p>
 
             <div className="space-y-2">
               {DEMO_SCENARIOS.map(sc => (
@@ -257,7 +257,7 @@ export default function Dashboard({ setCurrentTab, setActiveBidderId }) {
           </div>
 
           <div className="relative z-1 mt-4 pt-3 border-t border-white/[0.06] text-[10px] text-slate-600 text-center">
-            Simulated Govt Layer Active · GeM Procurement System
+            GeM Compliance Platform · Prototype
           </div>
         </div>
       </div>
