@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timezone
+from backend.services.auth_service import hash_password
 from sqlalchemy.orm import Session
 from backend.models.models import (
     User, Tender, Requirement, Bidder, Document,
@@ -11,17 +12,38 @@ def seed_database(db: Session):
     # Idempotent: only seed if not already done
     existing_user = db.query(User).filter(User.email == "procurement.officer@demo.gov.in").first()
     if existing_user:
+        # If existing user still has dummy password, rehash it
+        if not existing_user.hashed_password.startswith("$2b$"):
+            existing_user.hashed_password = hash_password("demo123")
+            db.commit()
         return
 
-    # 1. Demo User (Procurement Officer)
-    demo_user = User(
-        email="procurement.officer@demo.gov.in",
-        name="Rajesh Sharma",
-        role="Senior Procurement Officer",
-        department="PSU Industrial Procurement Dept",
-        hashed_password="demo_hashed_pass_123"
-    )
-    db.add(demo_user)
+    # ── Seed 3 role-based users ──────────────────────────────────────────
+    users = [
+        User(
+            email="procurement.officer@demo.gov.in",
+            name="Rajesh Sharma",
+            role="Procurement Officer",
+            department="PSU Industrial Procurement Dept",
+            hashed_password=hash_password("demo123"),
+        ),
+        User(
+            email="senior.manager@demo.gov.in",
+            name="Priya Mehta",
+            role="Senior Manager",
+            department="Ministry of Heavy Industries",
+            hashed_password=hash_password("demo456"),
+        ),
+        User(
+            email="admin@demo.gov.in",
+            name="Arjun Kapoor",
+            role="System Admin",
+            department="GeM Platform Administration",
+            hashed_password=hash_password("admin123"),
+        ),
+    ]
+    for u in users:
+        db.add(u)
 
     # 2. GeM Tender
     tender_id = "GEM/2026/B/784921"

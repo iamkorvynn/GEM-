@@ -1,5 +1,6 @@
 import React from 'react';
 import { LayoutDashboard, FileText, Users, ShieldAlert, FolderOpen, Landmark, Activity, FileSpreadsheet, Plus, ClipboardList } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const menuGroups = [
   {
@@ -35,6 +36,8 @@ const menuGroups = [
 ];
 
 export default function Sidebar({ currentTab, setCurrentTab }) {
+  const { user } = useAuth();
+  const initials = user?.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '??';
   return (
     <aside
       className="glass-sidebar w-60 flex flex-col shrink-0"
@@ -106,18 +109,18 @@ export default function Sidebar({ currentTab, setCurrentTab }) {
         ))}
       </nav>
 
-      {/* Footer — Officer info */}
+      {/* Footer — Live user info from AuthContext */}
       <div className="px-3 py-4 border-t border-white/[0.06]">
         <div className="flex items-center gap-2.5 p-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
           <div
             className="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold text-white shrink-0"
             style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.8), rgba(99,102,241,0.8))' }}
           >
-            RS
+            {initials}
           </div>
-          <div className="overflow-hidden">
-            <div className="text-xs font-semibold text-slate-200 truncate">Rajesh Sharma</div>
-            <div className="text-[10px] text-slate-500 truncate">Senior Procurement Officer</div>
+          <div className="overflow-hidden flex-1">
+            <div className="text-xs font-semibold text-slate-200 truncate">{user?.name || 'Guest'}</div>
+            <div className="text-[10px] text-slate-500 truncate">{user?.role || ''}</div>
           </div>
           <div className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 animate-pulse" />
         </div>
