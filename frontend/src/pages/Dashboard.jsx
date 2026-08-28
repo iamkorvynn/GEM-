@@ -232,7 +232,7 @@ export default function Dashboard({ setCurrentTab, setActiveBidderId }) {
             <div className="text-[9px] font-bold tracking-widest uppercase text-amber-400 mb-2 flex items-center gap-1.5">
               <ShieldCheck className="w-3 h-3" /> Judging Demo Launcher
             </div>
-            <h3 className="text-sm font-bold text-white mb-1">5 PRD Test Scenarios</h3>
+            <h3 className="text-sm font-bold text-white mb-1">5 Demo Scenarios</h3>
             <p className="text-xs text-slate-500 mb-4 leading-relaxed">Each bidder tests a specific Track A/B/C detection pattern.</p>
 
             <div className="space-y-2">

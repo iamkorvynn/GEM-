@@ -270,7 +270,7 @@ export default function BidderProfile({ bidderId, onRunVerificationTrigger, show
                 <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${riskStyle.dot}50, transparent)` }} />
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-1">Overall Risk Verdict · PRD §8.4</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-1">Overall Risk Verdict</div>
                     <div className="text-4xl font-black" style={{ color: riskStyle.dot }}>{dashboard.risk_level}</div>
                     <div className="text-sm text-slate-400 mt-1">{dashboard.company_name} — {dashboard.overall_status?.replace(/_/g, ' ')}</div>
                   </div>

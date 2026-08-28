@@ -13,7 +13,7 @@ const menuGroups = [
   {
     title: 'Bidder Verification',
     items: [
-      { id: 'new-verification', label: 'New Verification',     icon: Plus,           badge: 'PRD §5' },
+      { id: 'new-verification', label: 'New Verification',     icon: Plus },
       { id: 'bidder-profile',   label: 'Bidder Profile',       icon: ClipboardList,  badge: 'Core' },
       { id: 'bidders',          label: 'Legacy Dashboard',     icon: Users },
     ]

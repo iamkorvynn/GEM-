@@ -71,7 +71,7 @@ export default function NewVerification({ onBidderCreated, showToast }) {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">New Verification</h1>
-              <p className="text-xs text-slate-500">Register a bidder · PRD §5.2 — mock registry pre-fetch runs automatically on submit</p>
+              <p className="text-xs text-slate-500">Add a bid to the review queue — registry pre-fetch runs automatically on submit</p>
             </div>
           </div>
 
