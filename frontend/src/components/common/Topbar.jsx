@@ -1,77 +1,99 @@
-import React, { useState } from 'react';
-import { Search, Bell, Shield, Sparkles, UserCheck, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Bell, Sparkles } from 'lucide-react';
 
 export default function Topbar({ activeBidderId, setActiveBidderId, setCurrentTab, onGlobalSearch }) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [systemStatus, setSystemStatus] = useState('ONLINE');
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const res = await fetch('http://127.0.0.1:8000/', { signal: AbortSignal.timeout(3000) });
+        setSystemStatus(res.ok ? 'ONLINE' : 'FALLBACK');
+      } catch { setSystemStatus('FALLBACK'); }
+    };
+    checkStatus();
+    const id = setInterval(checkStatus, 30000);
+    return () => clearInterval(id);
+  }, []);
 
   const demoBidders = [
-    { id: 'BIDDER-A', name: 'Bidder A (Compliant)', score: '98/100', risk: 'LOW', color: 'emerald' },
-    { id: 'BIDDER-B', name: 'Bidder B (Inconsistent)', score: '78/100', risk: 'MEDIUM', color: 'amber' },
-    { id: 'BIDDER-C', name: 'Bidder C (High Risk)', score: '58/100', risk: 'HIGH', color: 'rose' }
+    { id: 'BIDDER-A', name: 'Bidder A', risk: 'LOW',    dot: '#10b981' },
+    { id: 'BIDDER-B', name: 'Bidder B', risk: 'MED',    dot: '#f59e0b' },
+    { id: 'BIDDER-C', name: 'Bidder C', risk: 'HIGH',   dot: '#ef4444' },
+    { id: 'BIDDER-D', name: 'Bidder D', risk: 'HIGH',   dot: '#ef4444' },
+    { id: 'BIDDER-E', name: 'Bidder E', risk: 'HIGH',   dot: '#ef4444' },
   ];
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (onGlobalSearch) onGlobalSearch(searchQuery);
-  };
-
   return (
-    <header className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shadow-2xs">
-      {/* Global Search Bar */}
-      <form onSubmit={handleSearch} className="relative w-80">
-        <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+    <header className="glass-topbar px-5 py-2.5 flex items-center gap-4 sticky top-0 z-30">
+
+      {/* Search */}
+      <form
+        onSubmit={e => { e.preventDefault(); onGlobalSearch?.(searchQuery); }}
+        className="relative w-60 shrink-0"
+      >
+        <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-500 pointer-events-none" />
         <input
           type="text"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search Tender ID, Bidder, GSTIN, PAN..."
-          className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-slate-800 placeholder-slate-400"
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder="Search GSTIN, PAN, Tender…"
+          className="glass-input w-full pl-9 pr-3 py-2 text-xs"
+          style={{ borderRadius: 10 }}
         />
       </form>
 
-      {/* Demo Scenario Quick-Switcher */}
-      <div className="flex items-center space-x-2 bg-slate-100 p-1 rounded-lg border border-slate-200">
-        <span className="text-[11px] font-bold text-slate-500 px-2 flex items-center">
-          <Sparkles className="w-3.5 h-3.5 mr-1 text-amber-500" /> Demo Bidders:
+      {/* Demo quick-switcher */}
+      <div className="flex items-center gap-1 p-1 rounded-xl overflow-x-auto shrink" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <span className="text-[10px] font-bold text-slate-500 px-2 flex items-center gap-1 shrink-0 whitespace-nowrap">
+          <Sparkles className="w-3 h-3 text-amber-400" /> Demo:
         </span>
-        {demoBidders.map((b) => {
-          const isActive = activeBidderId === b.id;
+        {demoBidders.map(b => {
+          const active = activeBidderId === b.id;
           return (
             <button
               key={b.id}
-              onClick={() => {
-                setActiveBidderId(b.id);
-                setCurrentTab('bidders');
-              }}
-              className={`px-2.5 py-1 rounded text-xs font-medium transition-all flex items-center space-x-1.5 ${
-                isActive
-                  ? 'bg-slate-900 text-white font-semibold shadow-xs'
-                  : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-200'
-              }`}
+              id={`switch-${b.id}`}
+              onClick={() => { setActiveBidderId(b.id); setCurrentTab('bidder-profile'); }}
+              className="px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 shrink-0 transition-all"
+              style={active
+                ? { background: 'rgba(59,130,246,0.25)', border: '1px solid rgba(59,130,246,0.40)', color: '#93c5fd' }
+                : { background: 'transparent', border: '1px solid transparent', color: '#64748b' }
+              }
             >
-              <span>{b.name}</span>
-              <span className={`text-[10px] px-1 py-0.2 rounded font-bold ${
-                b.color === 'emerald' ? 'bg-emerald-100 text-emerald-800' :
-                b.color === 'amber' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'
-              }`}>
-                {b.score}
-              </span>
+              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: b.dot }} />
+              {b.name}
+              <span className="text-[9px] font-bold opacity-70">{b.risk}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Notifications & Profile */}
-      <div className="flex items-center space-x-4">
-        <button className="relative text-slate-500 hover:text-slate-800 p-1.5 rounded-full hover:bg-slate-100">
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
-        </button>
-        <div className="h-4 w-[1px] bg-slate-300"></div>
-        <div className="flex items-center space-x-2 text-xs">
-          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span className="font-semibold text-slate-700">GeM Portal Authenticated</span>
-        </div>
+      <div className="flex-1" />
+
+      {/* Bell */}
+      <button className="relative p-2 rounded-lg transition btn-glass-ghost">
+        <Bell className="w-4 h-4 text-slate-400" />
+        <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+      </button>
+
+      <div className="w-px h-5 bg-white/10" />
+
+      {/* System status indicator — PRD §5.1 */}
+      <div
+        id="system-status-indicator"
+        title={systemStatus === 'ONLINE' ? 'All mock government adapters operational' : 'Adapters in fallback — Manual Verification Required'}
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium cursor-help"
+        style={{
+          background: systemStatus === 'ONLINE' ? 'rgba(16,185,129,0.10)' : 'rgba(245,158,11,0.10)',
+          border: `1px solid ${systemStatus === 'ONLINE' ? 'rgba(16,185,129,0.25)' : 'rgba(245,158,11,0.25)'}`,
+        }}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full ${systemStatus === 'ONLINE' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400 animate-pulse'}`} />
+        <span className={systemStatus === 'ONLINE' ? 'text-emerald-300' : 'text-amber-300'}>
+          {systemStatus === 'ONLINE' ? 'Adapters Online' : 'Manual Verify Required'}
+        </span>
       </div>
     </header>
   );

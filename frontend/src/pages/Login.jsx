@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Lock, Mail, ArrowRight, Building2 } from 'lucide-react';
+import { ShieldCheck, Lock, Mail, ArrowRight } from 'lucide-react';
 
 export default function Login({ onLoginSuccess }) {
   const [email, setEmail] = useState('procurement.officer@demo.gov.in');
@@ -10,99 +10,120 @@ export default function Login({ onLoginSuccess }) {
     e.preventDefault();
     setLoading(true);
     setTimeout(() => {
-      onLoginSuccess({
-        email: email,
-        name: 'Rajesh Sharma',
-        role: 'Senior Procurement Officer',
-        department: 'PSU Industrial Procurement Department'
-      });
+      onLoginSuccess({ email, name: 'Rajesh Sharma', role: 'Senior Procurement Officer', department: 'PSU Industrial Procurement Department' });
       setLoading(false);
-    }, 600);
+    }, 700);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center px-4 relative overflow-hidden">
-      {/* Background Graphic Grid Accent */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30"></div>
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden" style={{ background: '#030712' }}>
 
-      <div className="max-w-md w-full z-10">
-        {/* Header Branding */}
+      {/* Ambient orbs */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute top-[-20%] left-[-10%] w-[700px] h-[700px] rounded-full opacity-20" style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.5) 0%, transparent 70%)', filter: 'blur(80px)' }} />
+        <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full opacity-15" style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.5) 0%, transparent 70%)', filter: 'blur(80px)' }} />
+        <div className="absolute top-[40%] right-[20%] w-[300px] h-[300px] rounded-full opacity-10" style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.5) 0%, transparent 70%)', filter: 'blur(60px)' }} />
+      </div>
+
+      {/* Grid overlay */}
+      <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
+
+      <div className="relative z-10 w-full max-w-md animate-fade-up">
+
+        {/* Logo / Branding */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center bg-amber-500 text-slate-950 px-4 py-2 rounded-xl text-2xl font-black shadow-lg mb-3">
-            GeM
+          <div className="inline-flex items-center justify-center mb-4">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-2xl blur-xl opacity-60" style={{ background: 'rgba(245,158,11,0.5)' }} />
+              <div className="relative px-5 py-3 rounded-2xl text-3xl font-black text-slate-950" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', boxShadow: '0 8px 32px rgba(245,158,11,0.35)' }}>
+                GeM
+              </div>
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-slate-100 tracking-tight">Government e-Marketplace</h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Government e-Marketplace</h1>
           <p className="text-sm text-slate-400 mt-1">Integrated Bid Compliance Verification Platform</p>
-          <div className="inline-flex items-center mt-3 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-[11px] text-amber-400">
-            <ShieldCheck className="w-3.5 h-3.5 mr-1" /> Authorized Enterprise Procurement Officer Portal
+          <div className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full text-xs text-amber-300 font-medium glass-badge-amber">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Authorized Enterprise Procurement Officer Portal
           </div>
         </div>
 
         {/* Login Card */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 shadow-2xl backdrop-blur-sm">
+        <div className="glass rounded-2xl p-8 shadow-2xl" style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.06)' }}>
+
+          {/* Inner shimmer line */}
+          <div className="absolute top-0 left-8 right-8 h-px rounded-full" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)' }} />
+
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                Officer Email / Username
-              </label>
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">Officer Email</label>
               <div className="relative">
                 <Mail className="w-4 h-4 absolute left-3.5 top-3 text-slate-500" />
                 <input
+                  id="login-email"
                   type="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500"
+                  onChange={e => setEmail(e.target.value)}
                   placeholder="procurement.officer@demo.gov.in"
+                  className="glass-input w-full pl-10 pr-4 py-2.5 text-sm"
                 />
               </div>
             </div>
 
+            {/* Password */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                Password
-              </label>
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">Password</label>
               <div className="relative">
                 <Lock className="w-4 h-4 absolute left-3.5 top-3 text-slate-500" />
                 <input
+                  id="login-password"
                   type="password"
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={e => setPassword(e.target.value)}
+                  className="glass-input w-full pl-10 pr-4 py-2.5 text-sm"
                 />
               </div>
             </div>
 
+            {/* Remember / Forgot */}
             <div className="flex items-center justify-between text-xs text-slate-400">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input type="checkbox" defaultChecked className="rounded bg-slate-950 border-slate-700 text-blue-600 focus:ring-blue-500" />
-                <span>Remember Officer Session</span>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" defaultChecked className="w-3.5 h-3.5 rounded accent-blue-500" />
+                <span>Remember Session</span>
               </label>
-              <a href="#forgot" onClick={(e) => e.preventDefault()} className="text-blue-400 hover:underline">Forgot credentials?</a>
+              <button type="button" className="text-blue-400 hover:text-blue-300 transition">Forgot credentials?</button>
             </div>
 
+            {/* Submit */}
             <button
+              id="login-submit"
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg text-sm transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center space-x-2"
+              className="btn-glass-primary w-full py-3 rounded-xl text-sm flex items-center justify-center gap-2"
             >
-              <span>{loading ? 'Authenticating...' : 'Sign In to Procurement Engine'}</span>
-              {!loading && <ArrowRight className="w-4 h-4" />}
+              {loading ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  Authenticating…
+                </>
+              ) : (
+                <>Sign In to Procurement Engine <ArrowRight className="w-4 h-4" /></>
+              )}
             </button>
           </form>
 
-          {/* Quick Demo Credentials Box */}
-          <div className="mt-6 p-3 bg-slate-950/80 border border-slate-800 rounded-lg text-xs text-slate-400 space-y-1">
-            <div className="font-semibold text-amber-400 text-[11px] uppercase tracking-wider">Demo Credentials Preloaded</div>
-            <div>Email: <code className="text-slate-200 bg-slate-900 px-1 py-0.5 rounded">procurement.officer@demo.gov.in</code></div>
-            <div>Password: <code className="text-slate-200 bg-slate-900 px-1 py-0.5 rounded">demo123</code></div>
+          {/* Demo credentials */}
+          <div className="mt-5 p-3 rounded-xl glass-inner text-xs text-slate-400 space-y-1">
+            <div className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1.5">Demo Credentials Preloaded</div>
+            <div>Email: <code className="text-slate-200 font-mono bg-white/5 px-1.5 py-0.5 rounded">procurement.officer@demo.gov.in</code></div>
+            <div>Password: <code className="text-slate-200 font-mono bg-white/5 px-1.5 py-0.5 rounded">demo123</code></div>
           </div>
         </div>
 
-        <div className="text-center mt-6 text-xs text-slate-500">
-          GeM Compliance Verification System v1.0.0 | Simulated Government Layer
-        </div>
+        <p className="text-center mt-6 text-xs text-slate-600">GeM Compliance Verification System v1.0.0 · Simulated Government Layer</p>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from datetime import datetime
 
 class LoginRequest(BaseModel):
@@ -77,9 +77,18 @@ class DocumentSchema(BaseModel):
     file_size: int
     uploaded_at: datetime
     classified_type: Optional[str] = None
+    doc_type: Optional[str] = None
     classification_confidence: float = 0.0
     status: str
+    extracted_fields: Optional[Dict[str, Any]] = None
+    confirmed_fields: Optional[Dict[str, Any]] = None
+    confirmed_by: Optional[str] = None
+    confirmed_at: Optional[datetime] = None
     entities: List[ExtractedEntitySchema] = []
+
+class DocumentConfirmRequest(BaseModel):
+    confirmed_fields: Dict[str, Any]
+    officer_id: str = "procurement.officer@demo.gov.in"
 
 class VerificationRecordSchema(BaseModel):
     id: str
@@ -92,6 +101,17 @@ class VerificationRecordSchema(BaseModel):
     verified_at: datetime
     reference_id: Optional[str] = None
     is_simulated: bool = True
+
+# PRD §6.4 — VerificationCheck schema for 3-track engine results
+class VerificationCheckSchema(BaseModel):
+    id: str
+    bidder_id: str
+    check_type: str        # EXACT | FUZZY | CORRELATION
+    module: str
+    result: str            # PASS | FAIL | FLAGGED
+    reason: str
+    source_fields: Optional[Dict[str, Any]] = None
+    checked_at: datetime
 
 class ComplianceResultSchema(BaseModel):
     id: int
@@ -137,7 +157,7 @@ class OfficerDecisionSchema(BaseModel):
     decided_at: datetime
 
 class OfficerDecisionCreate(BaseModel):
-    decision: str # QUALIFIED, DISQUALIFIED, REQUEST_CLARIFICATION
+    decision: str  # QUALIFIED, DISQUALIFIED, REQUEST_CLARIFICATION
     remarks: str
     override_justification: Optional[str] = None
 
@@ -159,6 +179,8 @@ class BidderSchema(BaseModel):
     gstin: Optional[str] = None
     pan: Optional[str] = None
     udyam_id: Optional[str] = None
+    company_type: Optional[str] = None
+    incorporation_date: Optional[str] = None
     claims_msme: bool
     claims_startup: bool
     local_content_pct: float
@@ -169,10 +191,43 @@ class BidderSchema(BaseModel):
     overall_status: str
     documents: List[DocumentSchema] = []
     verification_records: List[VerificationRecordSchema] = []
+    verification_checks: List[VerificationCheckSchema] = []
     compliance_results: List[ComplianceResultSchema] = []
     ai_findings: List[AIFindingSchema] = []
     risk_assessment: Optional[RiskAssessmentSchema] = None
     officer_decision: Optional[OfficerDecisionSchema] = None
+
+class BidderCreate(BaseModel):
+    company_name: str
+    pan: str
+    gstin: str
+    company_type: Optional[str] = "Pvt Ltd"
+    tender_id: str
+    claims_msme: bool = False
+    claims_startup: bool = False
+    local_content_pct: float = 0.0
+
+# PRD §5.2 — Per-bidder dashboard with checklist + risk verdict + drill-down
+class ChecklistItem(BaseModel):
+    module: str
+    check_type: str
+    result: str            # PASS | FAIL | FLAGGED
+    reason: str
+    source_fields: Optional[Dict[str, Any]] = None
+    checked_at: datetime
+
+class BidderDashboard(BaseModel):
+    bidder_id: str
+    company_name: str
+    risk_level: str        # LOW | MEDIUM | HIGH
+    compliance_score: float
+    overall_status: str
+    checklist: List[ChecklistItem]
+    documents_confirmed: bool
+    total_checks: int
+    pass_count: int
+    fail_count: int
+    flagged_count: int
 
 class DashboardStats(BaseModel):
     active_tenders: int

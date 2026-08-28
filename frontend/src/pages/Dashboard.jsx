@@ -1,308 +1,263 @@
 import React, { useEffect, useState } from 'react';
-import {
-  FileText, Users, CheckCircle2, Clock, AlertTriangle, ShieldAlert,
-  TrendingUp, Activity, ArrowRight, ShieldCheck, FileCheck
-} from 'lucide-react';
+import { FileText, Users, CheckCircle2, Clock, ShieldAlert, TrendingUp, Activity, ArrowRight, ShieldCheck } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { fetchDashboardStats } from '../services/api';
-import StatusBadge from '../components/common/StatusBadge';
+
+const KPI_CARDS = [
+  { label: 'Active Tenders',    value: 12, sub: '2 closing this week',         icon: FileText,     accent: '#3b82f6', glow: 'rgba(59,130,246,0.18)' },
+  { label: 'Total Bidders',     value: 48, sub: 'Across all tenders',          icon: Users,        accent: '#8b5cf6', glow: 'rgba(139,92,246,0.18)' },
+  { label: 'Verified',          value: 31, sub: '64.5% Fully Compliant',       icon: CheckCircle2, accent: '#10b981', glow: 'rgba(16,185,129,0.18)' },
+  { label: 'Pending Reviews',   value: 11, sub: 'Officer Action Required',     icon: Clock,        accent: '#f59e0b', glow: 'rgba(245,158,11,0.18)' },
+  { label: 'High Risk',         value: 6,  sub: 'Critical Discrepancies',      icon: ShieldAlert,  accent: '#ef4444', glow: 'rgba(239,68,68,0.18)' },
+];
+
+const PIE_DATA = [
+  { name: 'Compliant (90–100)', value: 31, color: '#10b981' },
+  { name: 'Review Req (70–89)', value: 11, color: '#f59e0b' },
+  { name: 'Non-Compliant (<70)', value: 6, color: '#ef4444' },
+];
+
+const BAR_DATA = [
+  { category: 'GST Reg',   Pass: 44, Fail: 4  },
+  { category: 'PAN Card',  Pass: 46, Fail: 2  },
+  { category: 'Udyam',     Pass: 38, Fail: 10 },
+  { category: 'OEM Auth',  Pass: 32, Fail: 16 },
+  { category: 'Local Ctnt',Pass: 41, Fail: 7  },
+  { category: 'Debarment', Pass: 46, Fail: 2  },
+];
+
+const DEMO_SCENARIOS = [
+  { id: 'BIDDER-A', label: 'Bidder A — Fully Compliant',       sub: 'ABC Industrial Solutions · Score: 98', color: '#10b981' },
+  { id: 'BIDDER-B', label: 'Bidder B — GSTIN Mismatch',        sub: 'Nova Safety Systems · Score: 72',     color: '#f59e0b' },
+  { id: 'BIDDER-C', label: 'Bidder C — OEM Date Fraud Signal', sub: 'Alpha Tech Enterprises · Score: 61',  color: '#ef4444' },
+  { id: 'BIDDER-D', label: 'Bidder D — Blacklist Match',       sub: 'Prime Industrial Tech · Score: 55',   color: '#ef4444' },
+  { id: 'BIDDER-E', label: 'Bidder E — Dual Red Flags',        sub: 'Radiant Procurement · Score: 42',     color: '#ef4444' },
+];
+
+const ACTIVITY_FEED = [
+  { time: '20:14 IST', title: 'GSTIN Verification Complete',        bidder: 'ABC Industrial Solutions', source: 'GST Adapter',        result: 'VERIFIED',        accent: '#10b981' },
+  { time: '20:15 IST', title: 'Legal Name Discrepancy Flagged',     bidder: 'Nova Safety Systems',      source: 'AI Extract Engine',  result: 'REVIEW REQUIRED', accent: '#f59e0b' },
+  { time: '20:17 IST', title: 'OEM Date Pre-dates Incorporation',   bidder: 'Alpha Tech Enterprises',   source: 'MCA21 Correlation',  result: 'HIGH RISK',       accent: '#ef4444' },
+  { time: '20:18 IST', title: 'Fuzzy Blacklist Match (97%)',        bidder: 'Prime Industrial Tech',    source: 'Debarment Watchlist', result: 'HIGH RISK',       accent: '#ef4444' },
+  { time: '20:19 IST', title: 'Officer Decision Recorded',          bidder: 'ABC Industrial Solutions', source: 'Rajesh Sharma',      result: 'QUALIFIED',       accent: '#3b82f6' },
+];
+
+function GlassTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="glass rounded-xl px-4 py-3 text-xs shadow-2xl" style={{ border: '1px solid rgba(255,255,255,0.10)' }}>
+      <div className="font-bold text-slate-300 mb-1">{label}</div>
+      {payload.map((p, i) => (
+        <div key={i} className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full" style={{ background: p.fill }} />
+          <span className="text-slate-400">{p.name}:</span>
+          <span className="text-white font-semibold">{p.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function Dashboard({ setCurrentTab, setActiveBidderId }) {
-  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchDashboardStats()
-      .then((data) => {
-        setStats(data);
-        setLoading(false);
-      })
+      .then(() => setLoading(false))
       .catch(() => setLoading(false));
   }, []);
 
-  const compliancePieData = [
-    { name: 'Fully Compliant (90-100)', value: 31, color: '#10b981' },
-    { name: 'Review Required (70-89)', value: 11, color: '#f59e0b' },
-    { name: 'High Risk / Non-Compliant (<70)', value: 6, color: '#ef4444' },
-  ];
-
-  const riskBarData = [
-    { category: 'GST Reg', Pass: 44, Fail: 4 },
-    { category: 'PAN Card', Pass: 46, Fail: 2 },
-    { category: 'Udyam/MSME', Pass: 38, Fail: 10 },
-    { category: 'OEM Auth', Pass: 32, Fail: 16 },
-    { category: 'Local Content', Pass: 41, Fail: 7 },
-    { category: 'Debarment DB', Pass: 46, Fail: 2 },
-  ];
-
-  if (loading) {
-    return <div className="p-8 text-center text-slate-500">Loading procurement analytics dashboard...</div>;
-  }
+  if (loading) return (
+    <div className="p-8 space-y-4">
+      {[1,2,3,4,5].map(i => <div key={i} className="skeleton h-16 w-full rounded-xl" />)}
+    </div>
+  );
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Top Welcome Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-2xs">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center">
-            GeM Procurement Compliance Intelligence Dashboard
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Automated verification overview across active government tenders and bidder submissions.
-          </p>
+    <div className="p-6 space-y-6 relative z-1">
+
+      {/* ── Welcome Header ── */}
+      <div
+        className="glass rounded-2xl px-6 py-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-fade-up overflow-hidden relative"
+        style={{ boxShadow: '0 0 40px rgba(59,130,246,0.08)' }}
+      >
+        {/* accent bar */}
+        <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl" style={{ background: 'linear-gradient(180deg, #3b82f6, #8b5cf6)' }} />
+        <div className="pl-4">
+          <h1 className="text-lg font-bold text-white tracking-tight">GeM Procurement Compliance Intelligence</h1>
+          <p className="text-xs text-slate-500 mt-0.5">Automated 3-track verification · Track A (Exact) · Track B (Fuzzy) · Track C (Correlation)</p>
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex gap-2 shrink-0">
           <button
             onClick={() => setCurrentTab('tenders')}
-            className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-all flex items-center space-x-1.5"
+            className="btn-glass-ghost px-4 py-2 rounded-xl text-xs flex items-center gap-1.5"
           >
-            <FileText className="w-4 h-4" />
-            <span>Manage Tenders</span>
+            <FileText className="w-3.5 h-3.5" /> Tenders
           </button>
           <button
-            onClick={() => setCurrentTab('bidders')}
-            className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-all flex items-center space-x-1.5"
+            onClick={() => setCurrentTab('new-verification')}
+            className="btn-glass-primary px-4 py-2 rounded-xl text-xs flex items-center gap-1.5"
           >
-            <Users className="w-4 h-4" />
-            <span>Evaluate Demo Bidders</span>
+            <ShieldCheck className="w-3.5 h-3.5" /> New Verification
           </button>
         </div>
       </div>
 
-      {/* KPI Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Active Tenders</span>
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-              <FileText className="w-4 h-4" />
+      {/* ── KPI Cards ── */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {KPI_CARDS.map((card, i) => {
+          const Icon = card.icon;
+          return (
+            <div
+              key={i}
+              className="glass rounded-2xl p-4 relative overflow-hidden animate-fade-up group"
+              style={{ animationDelay: `${i * 60}ms`, boxShadow: `0 0 30px ${card.glow}` }}
+            >
+              {/* Background glow orb */}
+              <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full blur-xl opacity-25 transition-opacity group-hover:opacity-40" style={{ background: card.accent }} />
+              <div className="flex items-center justify-between mb-3 relative z-1">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider leading-tight">{card.label}</span>
+                <div className="p-2 rounded-xl" style={{ background: `${card.accent}18`, border: `1px solid ${card.accent}30` }}>
+                  <Icon className="w-3.5 h-3.5" style={{ color: card.accent }} />
+                </div>
+              </div>
+              <div className="text-3xl font-black relative z-1" style={{ color: card.accent }}>{card.value}</div>
+              <div className="text-[10px] text-slate-500 mt-1 relative z-1">{card.sub}</div>
             </div>
-          </div>
-          <div className="text-2xl font-bold text-slate-900 mt-2">12</div>
-          <div className="text-[11px] text-emerald-600 font-medium mt-1 flex items-center">
-            <TrendingUp className="w-3 h-3 mr-1" /> 2 closing this week
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Bidders</span>
-            <div className="p-2 bg-slate-100 text-slate-700 rounded-lg">
-              <Users className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-slate-900 mt-2">48</div>
-          <div className="text-[11px] text-slate-500 mt-1">Across all active tenders</div>
-        </div>
-
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Verified Bidders</span>
-            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-              <CheckCircle2 className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-emerald-600 mt-2">31</div>
-          <div className="text-[11px] text-emerald-700 font-medium mt-1">64.5% Fully Compliant</div>
-        </div>
-
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Pending Reviews</span>
-            <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-amber-600 mt-2">11</div>
-          <div className="text-[11px] text-amber-700 font-medium mt-1">Requires Officer Action</div>
-        </div>
-
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">High Risk Bidders</span>
-            <div className="p-2 bg-rose-50 text-rose-600 rounded-lg">
-              <ShieldAlert className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-rose-600 mt-2">6</div>
-          <div className="text-[11px] text-rose-700 font-medium mt-1">Critical Discrepancies</div>
-        </div>
+          );
+        })}
       </div>
 
-      {/* Analytics Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Compliance Distribution Donut */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs">
-          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center justify-between">
-            <span>Compliance Distribution</span>
-            <span className="text-xs font-normal text-slate-400">Total: 48 Bidders</span>
-          </h2>
-          <div className="h-64">
+      {/* ── Charts ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Donut */}
+        <div className="glass rounded-2xl p-5 animate-fade-up" style={{ animationDelay: '120ms' }}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-bold text-white">Compliance Distribution</h2>
+            <span className="text-xs text-slate-500">48 Bidders</span>
+          </div>
+          <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie
-                  data={compliancePieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={90}
-                  paddingAngle={4}
-                  dataKey="value"
-                >
-                  {compliancePieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                <Pie data={PIE_DATA} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={4} dataKey="value">
+                  {PIE_DATA.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} opacity={0.85} />
                   ))}
                 </Pie>
-                <Tooltip />
-                <Legend />
+                <Tooltip content={<GlassTooltip />} />
+                <Legend wrapperStyle={{ fontSize: 11, color: '#64748b' }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Verification Pass / Fail Status per Rule Category */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs">
-          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center justify-between">
-            <span>Requirement Verification Breakdown</span>
-            <span className="text-xs font-normal text-slate-400">By Category</span>
-          </h2>
-          <div className="h-64">
+        {/* Bar */}
+        <div className="glass rounded-2xl p-5 animate-fade-up" style={{ animationDelay: '160ms' }}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-bold text-white">Verification Breakdown by Rule</h2>
+            <span className="text-xs text-slate-500">By Category</span>
+          </div>
+          <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={riskBarData}>
-                <XAxis dataKey="category" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Bar dataKey="Pass" fill="#10b981" stackId="a" />
-                <Bar dataKey="Fail" fill="#ef4444" stackId="a" />
+              <BarChart data={BAR_DATA} barCategoryGap="30%">
+                <XAxis dataKey="category" tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                <Tooltip content={<GlassTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+                <Bar dataKey="Pass" fill="#10b981" stackId="a" radius={[4,4,0,0]} opacity={0.85} />
+                <Bar dataKey="Fail" fill="#ef4444" stackId="a" radius={[0,0,0,0]} opacity={0.85} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* Recent Activity Timeline & Demo Bidder Shortcuts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Audit Activity Feed */}
-        <div className="lg:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-2xs">
-          <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
-            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center">
-              <Activity className="w-4 h-4 mr-2 text-blue-600" /> Recent Verification Activity Log
+      {/* ── Activity + Demo Launcher ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        {/* Activity Feed */}
+        <div className="lg:col-span-2 glass rounded-2xl p-5 animate-fade-up" style={{ animationDelay: '200ms' }}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-bold text-white flex items-center gap-2">
+              <Activity className="w-4 h-4 text-blue-400" /> Recent Verification Activity
             </h2>
             <button
               onClick={() => setCurrentTab('audit-trail')}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center"
+              className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 transition"
             >
-              View Complete Audit Log <ArrowRight className="w-3.5 h-3.5 ml-1" />
+              View All <ArrowRight className="w-3 h-3" />
             </button>
           </div>
-
-          <div className="space-y-3">
-            {[
-              {
-                time: '20:14:22 IST',
-                title: 'GST Verification Completed',
-                bidder: 'ABC Industrial Solutions Pvt. Ltd.',
-                source: 'Mock GST Adapter',
-                result: 'VERIFIED',
-                color: 'emerald'
-              },
-              {
-                time: '20:15:04 IST',
-                title: 'Legal Name Discrepancy Flagged',
-                bidder: 'Nova Safety Systems Pvt. Ltd.',
-                source: 'AI Extraction Engine',
-                result: 'REVIEW REQUIRED',
-                color: 'amber'
-              },
-              {
-                time: '20:17:30 IST',
-                title: 'OEM Authorization Document Missing & Debarment Alert',
-                bidder: 'Prime Industrial Technologies',
-                source: 'Debarment Watchlist DB',
-                result: 'HIGH RISK',
-                color: 'rose'
-              },
-              {
-                time: '20:19:02 IST',
-                title: 'Officer Officer Decision Recorded',
-                bidder: 'ABC Industrial Solutions Pvt. Ltd.',
-                source: 'Procurement Officer (Rajesh Sharma)',
-                result: 'QUALIFIED',
-                color: 'blue'
-              }
-            ].map((act, idx) => (
-              <div key={idx} className="flex items-start justify-between p-3 bg-slate-50 rounded-lg border border-slate-200/80">
-                <div>
-                  <div className="text-xs font-semibold text-slate-800">{act.title}</div>
-                  <div className="text-xs text-slate-600 mt-0.5">
-                    Bidder: <span className="font-medium text-slate-900">{act.bidder}</span> • {act.source}
+          <div className="space-y-2">
+            {ACTIVITY_FEED.map((act, i) => (
+              <div
+                key={i}
+                className="flex items-start gap-3 p-3 rounded-xl transition"
+                style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
+              >
+                <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 animate-pulse" style={{ background: act.accent }} />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-semibold text-slate-200 truncate">{act.title}</div>
+                  <div className="text-[10px] text-slate-500 mt-0.5 truncate">
+                    {act.bidder} · {act.source}
                   </div>
-                  <div className="text-[10px] text-slate-400 mt-1">{act.time}</div>
                 </div>
-                <StatusBadge status={act.result} />
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-md" style={{ background: `${act.accent}15`, border: `1px solid ${act.accent}30`, color: act.accent }}>
+                    {act.result}
+                  </span>
+                  <span className="text-[10px] text-slate-600">{act.time}</span>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Demo Scenario Launcher Card */}
-        <div className="bg-slate-900 text-slate-100 p-5 rounded-xl border border-slate-800 flex flex-col justify-between shadow-lg">
-          <div>
-            <div className="flex items-center space-x-2 text-amber-400 font-bold text-xs uppercase tracking-wider mb-2">
-              <ShieldCheck className="w-4 h-4" /> Judging Demo Launcher
+        {/* Demo Scenario Launcher */}
+        <div
+          className="rounded-2xl p-5 flex flex-col animate-fade-up relative overflow-hidden"
+          style={{
+            animationDelay: '240ms',
+            background: 'rgba(8,14,30,0.80)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            backdropFilter: 'blur(24px)',
+            boxShadow: '0 0 40px rgba(59,130,246,0.08)',
+          }}
+        >
+          {/* Orb accent */}
+          <div className="absolute top-0 right-0 w-40 h-40 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)', filter: 'blur(30px)' }} />
+
+          <div className="relative z-1">
+            <div className="text-[9px] font-bold tracking-widest uppercase text-amber-400 mb-2 flex items-center gap-1.5">
+              <ShieldCheck className="w-3 h-3" /> Judging Demo Launcher
             </div>
-            <h3 className="text-base font-bold text-white mb-2">Evaluate Demo Tender Scenarios</h3>
-            <p className="text-xs text-slate-300 mb-4 leading-relaxed">
-              Test end-to-end compliance checking on pre-configured realistic bidder profiles.
-            </p>
+            <h3 className="text-sm font-bold text-white mb-1">5 PRD Test Scenarios</h3>
+            <p className="text-xs text-slate-500 mb-4 leading-relaxed">Each bidder tests a specific Track A/B/C detection pattern.</p>
 
             <div className="space-y-2">
-              <button
-                onClick={() => {
-                  setActiveBidderId('BIDDER-A');
-                  setCurrentTab('bidders');
-                }}
-                className="w-full text-left p-2.5 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all flex items-center justify-between text-xs"
-              >
-                <div>
-                  <div className="font-semibold text-emerald-400">Bidder A — Fully Compliant</div>
-                  <div className="text-[11px] text-slate-400">ABC Industrial Solutions (Score: 98)</div>
-                </div>
-                <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-              </button>
-
-              <button
-                onClick={() => {
-                  setActiveBidderId('BIDDER-B');
-                  setCurrentTab('bidders');
-                }}
-                className="w-full text-left p-2.5 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all flex items-center justify-between text-xs"
-              >
-                <div>
-                  <div className="font-semibold text-amber-400">Bidder B — Inconsistent</div>
-                  <div className="text-[11px] text-slate-400">Nova Safety Systems (Score: 78)</div>
-                </div>
-                <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-              </button>
-
-              <button
-                onClick={() => {
-                  setActiveBidderId('BIDDER-C');
-                  setCurrentTab('bidders');
-                }}
-                className="w-full text-left p-2.5 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all flex items-center justify-between text-xs"
-              >
-                <div>
-                  <div className="font-semibold text-rose-400">Bidder C — High Risk</div>
-                  <div className="text-[11px] text-slate-400">Prime Industrial Tech (Score: 58)</div>
-                </div>
-                <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-              </button>
+              {DEMO_SCENARIOS.map(sc => (
+                <button
+                  key={sc.id}
+                  id={`demo-${sc.id}`}
+                  onClick={() => { setActiveBidderId(sc.id); setCurrentTab('bidder-profile'); }}
+                  className="w-full text-left p-3 rounded-xl flex items-center justify-between text-xs transition-all group"
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; }}
+                >
+                  <div>
+                    <div className="font-semibold" style={{ color: sc.color }}>{sc.label}</div>
+                    <div className="text-[10px] text-slate-600 mt-0.5">{sc.sub}</div>
+                  </div>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-400 transition" />
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-800 text-[10px] text-slate-400 text-center">
-            Simulated Govt Layer Active • GeM Procurement System
+          <div className="relative z-1 mt-4 pt-3 border-t border-white/[0.06] text-[10px] text-slate-600 text-center">
+            Simulated Govt Layer Active · GeM Procurement System
           </div>
         </div>
       </div>

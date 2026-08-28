@@ -1,79 +1,100 @@
 import React from 'react';
-import {
-  LayoutDashboard, FileText, Users, ShieldAlert,
-  FolderOpen, Landmark, Activity, FileSpreadsheet,
-  CheckCircle, ChevronRight, Award
-} from 'lucide-react';
+import { LayoutDashboard, FileText, Users, ShieldAlert, FolderOpen, Landmark, Activity, FileSpreadsheet, Plus, ClipboardList } from 'lucide-react';
+
+const menuGroups = [
+  {
+    title: 'Core Procurement',
+    items: [
+      { id: 'dashboard',      label: 'Main Dashboard',   icon: LayoutDashboard },
+      { id: 'tenders',        label: 'Tenders',           icon: FileText },
+    ]
+  },
+  {
+    title: 'Bidder Verification',
+    items: [
+      { id: 'new-verification', label: 'New Verification',     icon: Plus,           badge: 'PRD §5' },
+      { id: 'bidder-profile',   label: 'Bidder Profile',       icon: ClipboardList,  badge: 'Core' },
+      { id: 'bidders',          label: 'Legacy Dashboard',     icon: Users },
+    ]
+  },
+  {
+    title: 'Verification Engine',
+    items: [
+      { id: 'documents',    label: 'Document Ingestion',  icon: FolderOpen },
+      { id: 'govt-sources', label: 'Gov. Sources',        icon: Landmark,     badge: 'Mock' },
+      { id: 'risk-overview',label: 'Risk Analytics',      icon: ShieldAlert },
+    ]
+  },
+  {
+    title: 'Governance',
+    items: [
+      { id: 'audit-trail',  label: 'Audit Trail',         icon: Activity },
+      { id: 'reports',      label: 'Reports',             icon: FileSpreadsheet },
+    ]
+  }
+];
 
 export default function Sidebar({ currentTab, setCurrentTab }) {
-  const menuGroups = [
-    {
-      title: "Core Procurement",
-      items: [
-        { id: 'dashboard', label: 'Main Dashboard', icon: LayoutDashboard },
-        { id: 'tenders', label: 'Tenders Management', icon: FileText },
-        { id: 'bidders', label: 'Bidder Verification', icon: Users, badge: '3 Demo' },
-      ]
-    },
-    {
-      title: "Verification Engine",
-      items: [
-        { id: 'documents', label: 'Document Ingestion', icon: FolderOpen },
-        { id: 'govt-sources', label: 'Government Sources', icon: Landmark, badge: 'Mock APIs' },
-        { id: 'risk-overview', label: 'Risk Analytics', icon: ShieldAlert },
-      ]
-    },
-    {
-      title: "Governance & Reports",
-      items: [
-        { id: 'audit-trail', label: 'Audit Trail', icon: Activity },
-        { id: 'reports', label: 'Compliance Reports', icon: FileSpreadsheet },
-      ]
-    }
-  ];
-
   return (
-    <aside className="w-64 bg-slate-900 text-slate-300 border-r border-slate-800 flex flex-col shrink-0 min-h-screen">
-      {/* GeM Brand Header */}
-      <div className="p-4 border-b border-slate-800 flex items-center space-x-3 bg-slate-950/60">
-        <div className="bg-amber-500 text-slate-950 p-2 rounded-lg font-black text-lg shadow-sm">
-          GeM
+    <aside
+      className="glass-sidebar w-60 flex flex-col shrink-0"
+      style={{ minHeight: '100vh' }}
+    >
+      {/* Brand Header */}
+      <div className="px-4 py-5 border-b border-white/[0.06] flex items-center gap-3">
+        <div
+          className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-base text-slate-950 shrink-0"
+          style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', boxShadow: '0 4px 14px rgba(245,158,11,0.35)' }}
+        >
+          G
         </div>
         <div>
-          <div className="font-bold text-slate-100 text-sm tracking-wide">Government e-Marketplace</div>
-          <div className="text-[11px] text-amber-400 font-medium">Compliance Intelligence</div>
+          <div className="text-[13px] font-bold text-white leading-tight">GeM Compliance</div>
+          <div className="text-[10px] font-medium mt-0.5" style={{ color: '#f59e0b' }}>AI Verification Engine</div>
         </div>
       </div>
 
-      {/* Navigation Groups */}
-      <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
-        {menuGroups.map((group, idx) => (
-          <div key={idx}>
-            <div className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+      {/* Nav */}
+      <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-5">
+        {menuGroups.map((group, gi) => (
+          <div key={gi}>
+            <div className="px-3 mb-1.5 text-[9px] font-bold tracking-widest uppercase text-slate-600">
               {group.title}
             </div>
-            <div className="space-y-1">
-              {group.items.map((item) => {
+            <div className="space-y-0.5">
+              {group.items.map(item => {
                 const Icon = item.icon;
                 const active = currentTab === item.id;
                 return (
                   <button
                     key={item.id}
+                    id={`nav-${item.id}`}
                     onClick={() => setCurrentTab(item.id)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-md text-xs font-medium transition-all ${
-                      active
-                        ? 'bg-blue-600 text-white font-semibold shadow-md'
-                        : 'text-slate-300 hover:bg-slate-800/80 hover:text-slate-100'
-                    }`}
+                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all group"
+                    style={active ? {
+                      background: 'rgba(59,130,246,0.18)',
+                      border: '1px solid rgba(59,130,246,0.30)',
+                      color: '#93c5fd',
+                      boxShadow: '0 0 20px rgba(59,130,246,0.10)'
+                    } : {
+                      background: 'transparent',
+                      border: '1px solid transparent',
+                      color: '#64748b',
+                    }}
+                    onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#94a3b8'; }}}
+                    onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b'; }}}
                   >
-                    <div className="flex items-center space-x-2.5">
-                      <Icon className={`w-4 h-4 ${active ? 'text-white' : 'text-slate-400'}`} />
+                    <div className="flex items-center gap-2.5">
+                      <Icon className="w-3.5 h-3.5 shrink-0" />
                       <span>{item.label}</span>
                     </div>
                     {item.badge && (
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
-                        active ? 'bg-blue-700 text-blue-100' : 'bg-slate-800 text-slate-400 border border-slate-700'
-                      }`}>
+                      <span
+                        className="text-[9px] px-1.5 py-0.5 rounded-md font-bold"
+                        style={active
+                          ? { background: 'rgba(59,130,246,0.25)', color: '#93c5fd' }
+                          : { background: 'rgba(255,255,255,0.05)', color: '#475569', border: '1px solid rgba(255,255,255,0.07)' }}
+                      >
                         {item.badge}
                       </span>
                     )}
@@ -83,18 +104,22 @@ export default function Sidebar({ currentTab, setCurrentTab }) {
             </div>
           </div>
         ))}
-      </div>
+      </nav>
 
-      {/* Footer User Info */}
-      <div className="p-3 border-t border-slate-800 bg-slate-950/40 text-xs">
-        <div className="flex items-center space-x-2">
-          <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
+      {/* Footer — Officer info */}
+      <div className="px-3 py-4 border-t border-white/[0.06]">
+        <div className="flex items-center gap-2.5 p-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold text-white shrink-0"
+            style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.8), rgba(99,102,241,0.8))' }}
+          >
             RS
           </div>
           <div className="overflow-hidden">
-            <div className="font-semibold text-slate-200 truncate">Rajesh Sharma</div>
-            <div className="text-[10px] text-slate-400 truncate">Senior Procurement Officer</div>
+            <div className="text-xs font-semibold text-slate-200 truncate">Rajesh Sharma</div>
+            <div className="text-[10px] text-slate-500 truncate">Senior Procurement Officer</div>
           </div>
+          <div className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 animate-pulse" />
         </div>
       </div>
     </aside>

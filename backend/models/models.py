@@ -56,11 +56,13 @@ class Bidder(Base):
     gstin = Column(String, nullable=True)
     pan = Column(String, nullable=True)
     udyam_id = Column(String, nullable=True)
+    company_type = Column(String, nullable=True)          # e.g. 'Pvt Ltd', 'Proprietorship'
+    incorporation_date = Column(String, nullable=True)    # from mock MCA21, format: YYYY-MM-DD
     claims_msme = Column(Boolean, default=False)
     claims_startup = Column(Boolean, default=False)
     local_content_pct = Column(Float, default=0.0)
     submitted_at = Column(DateTime, default=datetime.utcnow)
-    
+
     compliance_score = Column(Float, default=0.0)
     risk_level = Column(String, default="PENDING") # LOW, MEDIUM, HIGH, CRITICAL, PENDING
     verification_progress = Column(Float, default=0.0) # 0 to 100 %
@@ -69,6 +71,7 @@ class Bidder(Base):
     tender = relationship("Tender", back_populates="bidders")
     documents = relationship("Document", back_populates="bidder", cascade="all, delete-orphan")
     verification_records = relationship("VerificationRecord", back_populates="bidder", cascade="all, delete-orphan")
+    verification_checks = relationship("VerificationCheck", back_populates="bidder", cascade="all, delete-orphan")
     compliance_results = relationship("ComplianceRuleResult", back_populates="bidder", cascade="all, delete-orphan")
     ai_findings = relationship("AIFinding", back_populates="bidder", cascade="all, delete-orphan")
     risk_assessment = relationship("RiskAssessment", back_populates="bidder", uselist=False, cascade="all, delete-orphan")
@@ -86,8 +89,16 @@ class Document(Base):
     uploaded_at = Column(DateTime, default=datetime.utcnow)
 
     classified_type = Column(String, nullable=True)
+    # PRD doc_type: TAX_CERTIFICATE, OEM_AUTH_LETTER
+    doc_type = Column(String, nullable=True)
     classification_confidence = Column(Float, default=0.0)
     status = Column(String, default="UPLOADED")
+
+    # Human-in-the-loop confirmation fields (PRD §9)
+    extracted_fields = Column(Text, nullable=True)    # JSON: raw LLM/OCR output pre-confirmation
+    confirmed_fields = Column(Text, nullable=True)    # JSON: post human-in-the-loop edit, nullable
+    confirmed_by = Column(String, nullable=True)      # officer id, nullable until confirmed
+    confirmed_at = Column(DateTime, nullable=True)    # nullable until confirmed
 
     bidder = relationship("Bidder", back_populates="documents")
     entities = relationship("ExtractedEntity", back_populates="document", cascade="all, delete-orphan")
@@ -120,6 +131,21 @@ class VerificationRecord(Base):
     is_simulated = Column(Boolean, default=True)
 
     bidder = relationship("Bidder", back_populates="verification_records")
+
+# PRD §6.4 — VerificationCheck: typed results from the 3-track engine
+class VerificationCheck(Base):
+    __tablename__ = "verification_checks"
+
+    id = Column(String, primary_key=True, index=True)
+    bidder_id = Column(String, ForeignKey("bidders.id"), nullable=False)
+    check_type = Column(String, nullable=False)   # EXACT | FUZZY | CORRELATION
+    module = Column(String, nullable=False)        # e.g. GSTIN_VALIDITY, BLACKLIST_MATCH, OEM_DATE_CORRELATION
+    result = Column(String, nullable=False)        # PASS | FAIL | FLAGGED
+    reason = Column(String, nullable=False)        # human-readable, specific
+    source_fields = Column(Text, nullable=True)    # JSON: which extracted/registry fields drove this
+    checked_at = Column(DateTime, default=datetime.utcnow)
+
+    bidder = relationship("Bidder", back_populates="verification_checks")
 
 class ComplianceRuleResult(Base):
     __tablename__ = "compliance_results"

@@ -4,11 +4,15 @@ import Sidebar from './components/common/Sidebar';
 import Topbar from './components/common/Topbar';
 import Toast from './components/common/Toast';
 import VerificationProgressDrawer from './components/verification/VerificationProgressDrawer';
+
+// Pages
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import TenderList from './pages/TenderList';
 import TenderDetails from './pages/TenderDetails';
 import BidderComplianceDashboard from './pages/BidderComplianceDashboard';
+import BidderProfile from './pages/BidderProfile';
+import NewVerification from './pages/NewVerification';
 import DocumentManagement from './pages/DocumentManagement';
 import GovVerificationView from './components/verification/GovVerificationView';
 import AuditTrailView from './pages/AuditTrailView';
@@ -24,21 +28,19 @@ export default function App() {
   const [toast, setToast] = useState(null);
   const showToast = (title, message, type = 'success') => {
     setToast({ title, message, type });
-    setTimeout(() => setToast(null), 4000);
+    setTimeout(() => setToast(null), 4500);
   };
 
   // Verification Progress Drawer State
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const handleTriggerVerificationDrawer = () => {
-    setIsDrawerOpen(true);
-  };
+  const handleTriggerVerificationDrawer = () => setIsDrawerOpen(true);
 
   const handleDrawerComplete = () => {
     setIsDrawerOpen(false);
     showToast(
       'Verification Pipeline Complete',
-      'Processed compliance rules, mock government lookups, and calculated risk score.',
+      'Track A (Exact), Track B (Fuzzy Blacklist), Track C (Correlation) all executed.',
       'success'
     );
   };
@@ -48,7 +50,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col font-sans text-slate-100 antialiased selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen flex flex-col font-sans antialiased selection:bg-blue-600 selection:text-white" style={{ background: '#030712', color: '#e2e8f0' }}>
       {/* 1. Government Simulated Layer Top Notification Banner */}
       <HeaderBanner />
 
@@ -58,7 +60,7 @@ export default function App() {
 
         {/* 3. Main Workspace Area */}
         <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-          {/* Topbar Navigation & Quick Switcher */}
+          {/* PRD §5.1 — Topbar with demo switcher + system status indicator */}
           <Topbar
             activeBidderId={activeBidderId}
             setActiveBidderId={(id) => {
@@ -75,7 +77,8 @@ export default function App() {
                 setCurrentTab={setCurrentTab}
                 setActiveBidderId={(id) => {
                   setActiveBidderId(id);
-                  showToast('Selected Demo Bidder', `Loading evaluation dashboard for ${id}`, 'info');
+                  setCurrentTab('bidder-profile');
+                  showToast('Selected Demo Bidder', `Loading 4-tab profile for ${id}`, 'info');
                 }}
               />
             )}
@@ -94,6 +97,26 @@ export default function App() {
               <TenderDetails
                 tenderId={activeTenderId}
                 onProceedToBidders={() => setCurrentTab('bidders')}
+              />
+            )}
+
+            {/* PRD §5.2 — 4-Tab Bidder Profile (Documents, Overview, Verification Detail, Audit Log) */}
+            {currentTab === 'bidder-profile' && (
+              <BidderProfile
+                bidderId={activeBidderId}
+                onRunVerificationTrigger={handleTriggerVerificationDrawer}
+                showToast={showToast}
+              />
+            )}
+
+            {/* PRD §5 — New Verification form (POST /bidders) */}
+            {currentTab === 'new-verification' && (
+              <NewVerification
+                showToast={showToast}
+                onBidderCreated={(newId) => {
+                  setActiveBidderId(newId);
+                  setCurrentTab('bidder-profile');
+                }}
               />
             )}
 
@@ -131,12 +154,13 @@ export default function App() {
               />
             )}
 
+            {/* PRD §5 — Global Audit Trail */}
             {currentTab === 'audit-trail' && <AuditTrailView />}
 
             {currentTab === 'reports' && (
               <ReportGenerator
                 bidderId={activeBidderId}
-                onBack={() => setCurrentTab('bidders')}
+                onBack={() => setCurrentTab('bidder-profile')}
               />
             )}
           </main>
@@ -146,10 +170,16 @@ export default function App() {
       {/* Floating Global Toast Notification */}
       <Toast toast={toast} onClose={() => setToast(null)} />
 
-      {/* Animated 10-step Verification Drawer */}
+      {/* Animated 3-Track Verification Drawer */}
       <VerificationProgressDrawer
         isOpen={isDrawerOpen}
-        bidderName={activeBidderId === 'BIDDER-A' ? 'ABC Industrial Solutions' : (activeBidderId === 'BIDDER-B' ? 'Nova Safety Systems' : 'Prime Industrial Tech')}
+        bidderName={
+          activeBidderId === 'BIDDER-A' ? 'ABC Industrial Solutions' :
+          activeBidderId === 'BIDDER-B' ? 'Nova Safety Systems' :
+          activeBidderId === 'BIDDER-C' ? 'Alpha Tech Enterprises' :
+          activeBidderId === 'BIDDER-D' ? 'Prime Industrial Technologies' :
+          'Radiant Procurement Solutions'
+        }
         onComplete={handleDrawerComplete}
       />
     </div>
