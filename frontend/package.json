@@ -28,6 +28,7 @@
     "vite": "^6.2.0"
   },
   "optionalDependencies": {
+    "@oxlint/binding-win32-x64-msvc": "^1.80.0",
     "@rolldown/binding-win32-x64-msvc": "^1.2.6"
   }
 }
