@@ -1,119 +1,61 @@
 import React, { useEffect, useState } from 'react';
 import {
-  FileText, Users, CheckCircle2, Clock, ShieldAlert,
-  TrendingUp, Activity, ArrowRight, ShieldCheck,
-  MoreHorizontal, TrendingDown, ChevronRight
+  MoreVertical, ChevronRight, TrendingUp, Sparkles,
+  ShieldCheck, CreditCard, ArrowRight
 } from 'lucide-react';
-import {
-  PieChart, Pie, Cell, BarChart, Bar, XAxis,
-  Tooltip, ResponsiveContainer, AreaChart, Area
-} from 'recharts';
 import { useAuth } from '../context/AuthContext';
 import { fetchDashboardStats } from '../services/api';
 
-/* ── Static demo data ─────────────────────────────────────────── */
-
-const BALANCE_TREND = [
-  { m: 'Nov', v: 28 }, { m: 'Dec', v: 22 }, { m: 'Jan', v: 35 },
-  { m: 'Feb', v: 30 }, { m: 'Mar', v: 42 },
+/* ── Circle avatar row data ────────────────────────────────────────── */
+const TEAM_AVATARS = [
+  { name: 'Rajesh Sharma',   initials: 'RS', bg: '#dbeafe', color: '#1d4ed8' },
+  { name: 'Priya V.',        initials: 'PV', bg: '#f3e8ff', color: '#7e22ce' },
+  { name: 'Arun Mehta',      initials: 'AM', bg: '#dcfce7', color: '#15803d' },
+  { name: 'Kavita Rao',      initials: 'KR', bg: '#ffedd5', color: '#c2410c' },
+  { name: 'Vikram Seth',     initials: 'VS', bg: '#fee2e2', color: '#b91c1c' },
+  { name: 'Ananya Sen',      initials: 'AS', bg: '#e0e7ff', color: '#4338ca' },
+  { name: 'Sanjay Dutt',     initials: 'SD', bg: '#fef3c7', color: '#b45309' },
 ];
 
-const ANALYTICS_DATA = [
-  { name: 'Compliant',    value: 31, color: '#a5b4fc' },  // blue
-  { name: 'In Review',   value: 11, color: '#fcd34d' },  // yellow
-  { name: 'Non-Compliant', value: 6, color: '#fca5a5' }, // red
+/* ── Recent bids / transactions ────────────────────────────────────── */
+const TRANSACTIONS = [
+  {
+    id: 'BID-001',
+    company: 'Apple Systems India',
+    sub: 'Industrial Tech · 03 April, 2026',
+    amount: '$653',
+    inr: '₹54,200',
+    icon: '🍎',
+  },
+  {
+    id: 'BID-002',
+    company: 'Ralph Edwards Logistics',
+    sub: 'Supply & Freight · 01 April, 2026',
+    amount: '$2,643',
+    inr: '₹2,19,400',
+    icon: '📦',
+  },
+  {
+    id: 'BID-003',
+    company: 'Jerome Bell Hardware',
+    sub: 'Safety Equipment · 27 March, 2026',
+    amount: '$20',
+    inr: '₹1,660',
+    icon: '🔧',
+  },
 ];
 
-const RECENT_TENDERS = [
-  { icon: '🏗️', title: 'Industrial Safety Equipment', dept: 'Ministry of Heavy Industries · 27 Aug 2026', amount: '₹2.5 Cr' },
-  { icon: '💊', title: 'Medical Supplies Procurement',  dept: 'Ministry of Health · 22 Aug 2026',          amount: '₹1.1 Cr' },
-  { icon: '🖥️', title: 'IT Infrastructure Services',   dept: 'MeitY · 18 Aug 2026',                       amount: '₹4.8 Cr' },
-];
-
-const ACTIVITY_FEED = [
-  { time: '20:14', title: 'GSTIN Verified',              bidder: 'ABC Industrial Solutions', result: 'VERIFIED',  color: '#15803d', bg: '#dcfce7', border: '#bbf7d0', icon: '✓' },
-  { time: '20:15', title: 'Legal Name Mismatch',         bidder: 'Nova Safety Systems',      result: 'REVIEW',    color: '#92400e', bg: '#fef3c7', border: '#fde68a', icon: '⚠' },
-  { time: '20:17', title: 'OEM Date Fraud Signal',       bidder: 'Alpha Tech Enterprises',   result: 'HIGH RISK', color: '#991b1b', bg: '#fee2e2', border: '#fecaca', icon: '✗' },
-  { time: '20:18', title: 'Blacklist Match (97%)',       bidder: 'Prime Industrial Tech',    result: 'HIGH RISK', color: '#991b1b', bg: '#fee2e2', border: '#fecaca', icon: '✗' },
-  { time: '20:19', title: 'Officer Decision Recorded',   bidder: 'ABC Industrial Solutions', result: 'QUALIFIED', color: '#1d4ed8', bg: '#dbeafe', border: '#bfdbfe', icon: '★' },
-];
-
-const DEMO_SCENARIOS = [
-  { id: 'BIDDER-A', label: 'ABC Industrial Solutions',  score: 98, risk: 'LOW',    color: '#15803d', dot: '#22c55e' },
-  { id: 'BIDDER-B', label: 'Nova Safety Systems',       score: 72, risk: 'MEDIUM', color: '#92400e', dot: '#f59e0b' },
-  { id: 'BIDDER-C', label: 'Alpha Tech Enterprises',    score: 61, risk: 'HIGH',   color: '#991b1b', dot: '#ef4444' },
-  { id: 'BIDDER-D', label: 'Prime Industrial Tech',     score: 55, risk: 'HIGH',   color: '#991b1b', dot: '#ef4444' },
-  { id: 'BIDDER-E', label: 'Radiant Procurement',       score: 42, risk: 'CRITICAL',color: '#9f1239', dot: '#f43f5e' },
-];
-
-/* ── Gauge arc component ────────────────────────────────────────── */
-function GaugeArc({ pct = 90 }) {
-  const r = 60, cx = 80, cy = 80;
-  const start = Math.PI;
-  const end   = start + (pct / 100) * Math.PI;
-  const x1 = cx + r * Math.cos(start), y1 = cy + r * Math.sin(start);
-  const x2 = cx + r * Math.cos(end),   y2 = cy + r * Math.sin(end);
-  const large = pct > 50 ? 1 : 0;
-
-  // Track
-  const tx1 = cx + r * Math.cos(Math.PI), ty1 = cy + r * Math.sin(Math.PI);
-  const tx2 = cx + r * Math.cos(2 * Math.PI), ty2 = cy + r * Math.sin(2 * Math.PI);
-
-  return (
-    <svg width={160} height={92} style={{ display: 'block', margin: '0 auto' }}>
-      {/* track */}
-      <path
-        d={`M ${tx1} ${ty1} A ${r} ${r} 0 0 1 ${tx2} ${ty2}`}
-        fill="none" stroke="#e5e7eb" strokeWidth={10} strokeLinecap="round"
-      />
-      {/* fill — multi-color segments */}
-      <path
-        d={`M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`}
-        fill="none"
-        stroke="url(#gaugeGrad)"
-        strokeWidth={10} strokeLinecap="round"
-      />
-      <defs>
-        <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%"   stopColor="#a5b4fc" />
-          <stop offset="50%"  stopColor="#fcd34d" />
-          <stop offset="100%" stopColor="#fca5a5" />
-        </linearGradient>
-      </defs>
-      <text x={cx} y={cy - 2} textAnchor="middle" fontSize={22} fontWeight={800} fill="#111827">{pct}%</text>
-      <text x={cx} y={cy + 18} textAnchor="middle" fontSize={10} fill="#9ca3af">Done</text>
-    </svg>
-  );
-}
-
-/* ── Tooltip ────────────────────────────────────────────────────── */
-function LightTooltip({ active, payload, label }) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="rounded-xl px-3 py-2 text-xs"
-      style={{ background: '#fff', border: '1.5px solid #e5e7eb', boxShadow: '0 8px 24px rgba(0,0,0,0.10)' }}>
-      <div className="font-bold text-gray-700 mb-1">{label}</div>
-      {payload.map((p, i) => (
-        <div key={i} className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full" style={{ background: p.fill || p.stroke }} />
-          <span style={{ color: '#6b7280' }}>{p.name}:</span>
-          <span style={{ color: '#111827', fontWeight: 600 }}>{p.value}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ── Card shell ─────────────────────────────────────────────────── */
-function Card({ children, className = '', style = {} }) {
+/* ── Card container matching Fenco UI ──────────────────────────────── */
+function FencoCard({ children, style = {}, className = '' }) {
   return (
     <div
       className={className}
       style={{
         background: '#ffffff',
-        borderRadius: 20,
-        padding: '20px 20px',
-        boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+        borderRadius: 24,
+        padding: '24px',
+        boxShadow: '0 2px 14px rgba(0, 0, 0, 0.04)',
+        border: '1px solid rgba(0, 0, 0, 0.04)',
         ...style,
       }}
     >
@@ -122,26 +64,112 @@ function Card({ children, className = '', style = {} }) {
   );
 }
 
-/* ── Three-dot menu icon ─────────────────────────────────────────── */
-function Dots() {
+/* ── Three vertical dots menu icon ─────────────────────────────────── */
+function MenuDots() {
   return (
     <button
-      style={{ color: '#d1d5db', padding: 4, borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer' }}
-      onMouseEnter={e => e.currentTarget.style.color = '#9ca3af'}
-      onMouseLeave={e => e.currentTarget.style.color = '#d1d5db'}
+      type="button"
+      style={{
+        background: 'transparent',
+        border: 'none',
+        color: '#c4c8d0',
+        cursor: 'pointer',
+        padding: '2px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+      onMouseEnter={e => e.currentTarget.style.color = '#6b7280'}
+      onMouseLeave={e => e.currentTarget.style.color = '#c4c8d0'}
+      title="Options"
     >
-      <MoreHorizontal style={{ width: 16, height: 16 }} />
+      <MoreVertical style={{ width: 16, height: 16 }} />
     </button>
   );
 }
 
-/* ════════════════════════════════════════════════════════════════
-   DASHBOARD
-   ════════════════════════════════════════════════════════════════ */
+/* ── Segmented Half-Circle Gauge 1:1 with Fenco UI ─────────────────── */
+function AnalyticsGauge() {
+  // Arc math:
+  // Semi-circle from (20, 85) to (150, 85) with radius 65.
+  // Arc length = pi * 65 = 204.2
+  // Segments:
+  //   Total filled: 90% (183.8 / 204.2)
+  //   Blue (Done): 60% (122.5)
+  //   Yellow (In progress): 20% (from 60% to 80% = 163.4)
+  //   Red/Pink (To do): 10% (from 80% to 90% = 183.8)
+  //   Remaining: 10% (unfilled track)
+  const totalLen = 204.2;
+
+  return (
+    <div style={{ position: 'relative', width: 170, margin: '8px auto 0' }}>
+      <svg width="170" height="96" viewBox="0 0 170 96" style={{ display: 'block' }}>
+        {/* Background gray track */}
+        <path
+          d="M 20,85 A 65,65 0 0,1 150,85"
+          fill="none"
+          stroke="#edf0f5"
+          strokeWidth="13"
+          strokeLinecap="round"
+        />
+        {/* Pink/Red segment (To do — extends to 90%) */}
+        <path
+          d="M 20,85 A 65,65 0 0,1 150,85"
+          fill="none"
+          stroke="#e88b8b"
+          strokeWidth="13"
+          strokeDasharray={`${totalLen * 0.90} ${totalLen}`}
+          strokeDashoffset="0"
+          strokeLinecap="round"
+        />
+        {/* Yellow segment (In progress — extends to 80%) */}
+        <path
+          d="M 20,85 A 65,65 0 0,1 150,85"
+          fill="none"
+          stroke="#f5d678"
+          strokeWidth="13"
+          strokeDasharray={`${totalLen * 0.80} ${totalLen}`}
+          strokeDashoffset="0"
+          strokeLinecap="round"
+        />
+        {/* Blue segment (Done — extends to 60%) */}
+        <path
+          d="M 20,85 A 65,65 0 0,1 150,85"
+          fill="none"
+          stroke="#7494ec"
+          strokeWidth="13"
+          strokeDasharray={`${totalLen * 0.60} ${totalLen}`}
+          strokeDashoffset="0"
+          strokeLinecap="round"
+        />
+      </svg>
+      {/* Center text */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 2,
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          pointerEvents: 'none',
+        }}
+      >
+        <div style={{ fontSize: 24, fontWeight: 800, color: '#1e2433', lineHeight: 1.1 }}>
+          90%
+        </div>
+        <div style={{ fontSize: 11, fontWeight: 500, color: '#9ca3af', marginTop: 2 }}>
+          Done
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard({ go, showToast }) {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const firstName = user?.name?.split(' ')[0] || 'Officer';
+  const officerName = user?.name || 'Alif Reza';
+  const firstName = officerName.split(' ')[0] || 'Alif';
 
   useEffect(() => {
     fetchDashboardStats()
@@ -149,340 +177,577 @@ export default function Dashboard({ go, showToast }) {
       .catch(() => setLoading(false));
   }, []);
 
-  if (loading) return (
-    <div className="p-6 space-y-4">
-      {[1,2,3,4].map(i => <div key={i} className="skeleton h-24 w-full rounded-2xl" />)}
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="p-8 space-y-4" style={{ background: '#f0f2f5', minHeight: '100%' }}>
+        {[1, 2, 3].map(i => (
+          <div key={i} className="skeleton h-32 w-full rounded-3xl" />
+        ))}
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 space-y-5" style={{ background: '#f0f2f5', minHeight: '100%' }}>
-
-      {/* ══ ROW 1 — Welcome + Balance Stats + Analytics ══ */}
-      <div
-        className="grid gap-5"
-        style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}
-      >
-
-        {/* Welcome */}
-        <Card>
-          <h1 style={{ fontSize: 26, fontWeight: 800, color: '#111827', lineHeight: 1.2, marginBottom: 4 }}>
-            Hello, <span style={{ color: '#3b82f6' }}>{firstName}</span>
+    <div
+      className="p-6 md:p-8 space-y-6"
+      style={{ background: '#f0f2f5', minHeight: '100%', color: '#1e2433' }}
+    >
+      {/* ── Top Header Row: Greeting + Circle Avatar Row ── */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        {/* Left greeting */}
+        <div>
+          <h1
+            style={{
+              fontSize: '32px',
+              fontWeight: 800,
+              color: '#1e2433',
+              lineHeight: 1.2,
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Hello, <span style={{ color: '#7494ec' }}>{officerName}</span>
           </h1>
-          <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 20 }}>
-            View and manage GeM procurement compliance
+          <p style={{ fontSize: '13px', color: '#9ca3af', marginTop: '4px' }}>
+            View and control your finances & procurement compliance here!
           </p>
+        </div>
 
-          {/* Mini trend */}
-          <div style={{ marginBottom: 8 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#374151', marginBottom: 2 }}>Verification Activity</div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-              <span style={{ fontSize: 28, fontWeight: 900, color: '#111827' }}>48</span>
-              <span style={{ fontSize: 11, color: '#9ca3af' }}>Total bidders</span>
+        {/* Right circle avatar row */}
+        <div
+          className="flex items-center gap-1.5 px-3 py-2 rounded-full"
+          style={{
+            background: '#ffffff',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
+            border: '1px solid rgba(0,0,0,0.04)',
+            alignSelf: 'flex-start',
+          }}
+        >
+          {TEAM_AVATARS.map((av, i) => (
+            <div
+              key={i}
+              title={av.name}
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: '50%',
+                background: av.bg,
+                color: av.color,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 11,
+                fontWeight: 700,
+                border: '2px solid #ffffff',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                cursor: 'pointer',
+              }}
+            >
+              {av.initials}
             </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: 4,
-              background: '#dcfce7', border: '1px solid #bbf7d0', color: '#15803d',
-              borderRadius: 999, padding: '3px 10px', fontSize: 11, fontWeight: 700,
-            }}>
-              <TrendingUp style={{ width: 12, height: 12 }} /> 14%
-            </span>
-            <span style={{ fontSize: 11, color: '#9ca3af' }}>vs last month</span>
-          </div>
-
-          {/* Sparkline */}
-          <div style={{ height: 56 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={BALANCE_TREND}>
-                <defs>
-                  <linearGradient id="spark" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.15} />
-                    <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <Area type="monotone" dataKey="v" stroke="#3b82f6" strokeWidth={2}
-                  fill="url(#spark)" dot={false} />
-                <XAxis dataKey="m" tick={{ fontSize: 9, fill: '#d1d5db' }} axisLine={false} tickLine={false} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-          <p style={{ fontSize: 10, color: '#d1d5db', marginTop: 4 }}>Always see your verification updates</p>
-        </Card>
-
-        {/* Balance / Stats card */}
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#374151' }}>Verification Statistics</div>
-            <Dots />
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 20 }}>
-            <span style={{ fontSize: 32, fontWeight: 900, color: '#111827' }}>31</span>
-            <span style={{ fontSize: 12, color: '#9ca3af' }}>Compliant bidders</span>
-          </div>
-
-          {/* Stacked bar */}
-          <div style={{ height: 72 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={[
-                { l: 'GST',  p: 44, f: 4  },
-                { l: 'PAN',  p: 46, f: 2  },
-                { l: 'OEM',  p: 32, f: 16 },
-                { l: 'MII',  p: 41, f: 7  },
-              ]} barCategoryGap="30%">
-                <XAxis dataKey="l" tick={{ fontSize: 9, fill: '#d1d5db' }} axisLine={false} tickLine={false} />
-                <Tooltip content={<LightTooltip />} cursor={false} />
-                <Bar dataKey="p" fill="#a5b4fc" radius={[4,4,0,0]} stackId="a" name="Pass" />
-                <Bar dataKey="f" fill="#fca5a5" radius={[4,4,0,0]} stackId="a" name="Fail" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
-            {[
-              { label: 'Verified',  value: 31, color: '#a5b4fc' },
-              { label: 'Pending',   value: 11, color: '#fcd34d' },
-              { label: 'High Risk', value:  6, color: '#fca5a5' },
-            ].map((s, i) => (
-              <div key={i} style={{ textAlign: 'center' }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, margin: '0 auto 4px' }} />
-                <div style={{ fontSize: 15, fontWeight: 800, color: '#111827' }}>{s.value}</div>
-                <div style={{ fontSize: 10, color: '#9ca3af' }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Analytics / Gauge card */}
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#374151' }}>Analytics</div>
-            <Dots />
-          </div>
-
-          {/* Legend */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-            {ANALYTICS_DATA.map((d, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: d.color, flexShrink: 0, display: 'inline-block' }} />
-                <span style={{ color: '#6b7280', flex: 1 }}>{d.name}</span>
-                <span style={{ fontWeight: 700, color: '#374151' }}>{d.value}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Gauge */}
-          <GaugeArc pct={64} />
-          <p style={{ textAlign: 'center', fontSize: 10, color: '#9ca3af', marginTop: 4 }}>Compliance rate</p>
-        </Card>
+          ))}
+          <button
+            type="button"
+            title="Next"
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: '50%',
+              background: '#f0f2f5',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#6b7280',
+              cursor: 'pointer',
+              marginLeft: 4,
+            }}
+          >
+            <ChevronRight style={{ width: 14, height: 14 }} />
+          </button>
+        </div>
       </div>
 
-      {/* ══ ROW 2 — Recent Tenders + Expenses/Income style + Quick Bids ══ */}
+      {/* ── ROW 1: Balance Statistics + Blue Credit Card + Analytics ── */}
       <div
         className="grid gap-5"
-        style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}
+        style={{
+          gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))',
+        }}
       >
-
-        {/* Recent Tenders — "Last Transactions" style */}
-        <Card style={{ gridColumn: '1' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#374151' }}>Recent Tenders</div>
-            <Dots />
+        {/* Card 1: Balance Statistics */}
+        <FencoCard>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#374151', marginBottom: 10 }}>
+            Balance Statistics
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            {RECENT_TENDERS.map((t, i) => (
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 24 }}>
+            <span
+              style={{
+                fontSize: 34,
+                fontWeight: 800,
+                color: '#1e2433',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              $38,729.61
+            </span>
+            <span style={{ fontSize: 11, color: '#9ca3af', fontWeight: 500 }}>
+              Total amount
+            </span>
+          </div>
+
+          {/* Bottom row: Wave sparkline on left, vertical pill bars on right */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+            {/* Left: wave curve + 14% badge */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                {/* SVG wave sparkline */}
+                <svg width="68" height="24" viewBox="0 0 68 24" fill="none">
+                  <path
+                    d="M 2,18 C 16,18 20,4 34,4 C 48,4 52,18 66,18"
+                    stroke="#7494ec"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+
+                {/* 14% badge */}
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 3,
+                    border: '1.5px solid #374151',
+                    borderRadius: 999,
+                    padding: '2px 7px',
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: '#1e2433',
+                  }}
+                >
+                  <TrendingUp style={{ width: 11, height: 11 }} /> 14%
+                </span>
+              </div>
+
+              <div style={{ fontSize: 10, color: '#9ca3af', lineHeight: 1.3 }}>
+                Always see<br />your earning updates
+              </div>
+            </div>
+
+            {/* Right: vertical month bars */}
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+              {[
+                { month: 'Nov', height: 14 },
+                { month: 'Dec', height: 8 },
+                { month: 'Jan', height: 32 },
+                { month: 'Feb', height: 26 },
+                { month: 'Mar', height: 42 },
+              ].map((item, i) => (
+                <div key={i} style={{ textAlign: 'center' }}>
+                  <div
+                    style={{
+                      width: 14,
+                      height: item.height,
+                      background: '#7494ec',
+                      borderRadius: 999,
+                      margin: '0 auto 6px',
+                    }}
+                  />
+                  <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 600 }}>
+                    {item.month}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </FencoCard>
+
+        {/* Card 2: THE BANK OF ANYTHING (Fenco Blue Card Mockup) */}
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #7494ec 0%, #5d7fe8 100%)',
+            borderRadius: 24,
+            padding: '22px 24px',
+            color: '#ffffff',
+            boxShadow: '0 8px 24px rgba(116, 148, 236, 0.28)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            position: 'relative',
+            overflow: 'hidden',
+            minHeight: 190,
+          }}
+        >
+          {/* Subtle background curved wave overlay */}
+          <div
+            style={{
+              position: 'absolute',
+              right: -30,
+              top: -30,
+              width: 180,
+              height: 180,
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.08)',
+              pointerEvents: 'none',
+            }}
+          />
+
+          {/* Card header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                opacity: 0.9,
+              }}
+            >
+              THE BANK OF ANYTHING
+            </span>
+          </div>
+
+          {/* Gold EMV Chip */}
+          <div style={{ margin: '14px 0 10px' }}>
+            <div
+              style={{
+                width: 36,
+                height: 26,
+                background: 'linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%)',
+                borderRadius: 6,
+                border: '1px solid rgba(0, 0, 0, 0.1)',
+                boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.4)',
+              }}
+            />
+          </div>
+
+          {/* Dots + 4 digits */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 16,
+              fontSize: 14,
+              fontWeight: 700,
+              letterSpacing: '0.15em',
+            }}
+          >
+            <span>••••</span>
+            <span>••••</span>
+            <span>••••</span>
+            <span style={{ letterSpacing: '0.05em' }}>2734</span>
+          </div>
+
+          {/* Expiry + Name + Mastercard Circles */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'space-between',
+              marginTop: 10,
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 9, opacity: 0.7, letterSpacing: '0.05em' }}>
+                3/18 &nbsp; 3/28
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 700, marginTop: 1 }}>
+                {officerName}
+              </div>
+            </div>
+
+            {/* Red & Yellow overlapping circles */}
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: '50%',
+                  background: '#ef4444',
+                  opacity: 0.9,
+                }}
+              />
+              <div
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: '50%',
+                  background: '#f59e0b',
+                  marginLeft: -10,
+                  opacity: 0.9,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Analytics (Done / In progress / To do + 90% Done Gauge) */}
+        <FencoCard>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 12,
+            }}
+          >
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
+              Analytics
+            </div>
+            <MenuDots />
+          </div>
+
+          {/* Legend dots */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
+            {[
+              { label: 'Done', color: '#7494ec' },
+              { label: 'In progres', color: '#f5d678' },
+              { label: 'To do', color: '#e88b8b' },
+            ].map((item, i) => (
               <div
                 key={i}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '12px 0',
-                  borderBottom: i < RECENT_TENDERS.length - 1 ? '1px solid #f1f5f9' : 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  fontSize: 12,
+                  color: '#4b5563',
+                  fontWeight: 500,
                 }}
               >
-                <div style={{
-                  width: 38, height: 38, borderRadius: '50%',
-                  background: '#f1f5f9', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', fontSize: 18, flexShrink: 0,
-                }}>
-                  {t.icon}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: '#111827', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.title}</div>
-                  <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.dept}</div>
-                </div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>{t.amount}</div>
-                <Dots />
+                <span
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: '50%',
+                    background: item.color,
+                    display: 'inline-block',
+                    flexShrink: 0,
+                  }}
+                />
+                <span>{item.label}</span>
               </div>
             ))}
           </div>
 
-          <button
-            onClick={() => go('tenders')}
-            style={{
-              width: '100%', marginTop: 12, padding: '10px 0', borderRadius: 12,
-              background: '#f7f8fa', border: '1px solid #e5e7eb',
-              fontSize: 12, fontWeight: 600, color: '#6b7280', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = '#eff6ff'}
-            onMouseLeave={e => e.currentTarget.style.background = '#f7f8fa'}
-          >
-            View All Tenders <ChevronRight style={{ width: 14, height: 14 }} />
-          </button>
-        </Card>
-
-        {/* Expenses & Income style → Bidder Risk Distribution + CTA */}
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#374151' }}>Compliance & Risk</div>
-            <Dots />
-          </div>
-
-          <div style={{ display: 'flex', gap: 32, marginBottom: 16 }}>
-            <div>
-              <div style={{ fontSize: 32, fontWeight: 900, color: '#a5b4fc' }}>64%</div>
-              <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 2 }}>Compliant</div>
-            </div>
-            <div>
-              <div style={{ fontSize: 32, fontWeight: 900, color: '#fca5a5' }}>13%</div>
-              <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 2 }}>High Risk</div>
-            </div>
-          </div>
-
-          {/* Progress bars */}
-          <div style={{ marginBottom: 6 }}>
-            <div style={{ height: 8, borderRadius: 999, background: '#f1f5f9', overflow: 'hidden', marginBottom: 6 }}>
-              <div style={{ height: '100%', width: '64%', background: '#a5b4fc', borderRadius: 999 }} />
-            </div>
-            <div style={{ height: 8, borderRadius: 999, background: '#f1f5f9', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: '13%', background: '#fca5a5', borderRadius: 999 }} />
-            </div>
-          </div>
-
-          {/* "More features" dark CTA */}
-          <div style={{
-            marginTop: 20, borderRadius: 16,
-            background: '#111827', padding: '16px',
-            display: 'flex', alignItems: 'center', gap: 12,
-          }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: 'rgba(255,255,255,0.10)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}>
-              <ShieldCheck style={{ width: 18, height: 18, color: '#a5b4fc' }} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#fff', marginBottom: 2 }}>Full Verification?</div>
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', lineHeight: 1.4 }}>
-                Run AI compliance pipeline on all bidders
-              </div>
-            </div>
-            <button
-              onClick={() => go('tenders')}
-              style={{
-                background: '#fff', color: '#111827',
-                border: 'none', borderRadius: 999,
-                padding: '8px 14px', fontSize: 11, fontWeight: 700,
-                cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f0f2f5'}
-              onMouseLeave={e => e.currentTarget.style.background = '#fff'}
-            >
-              Start Now
-            </button>
-          </div>
-        </Card>
-
-        {/* Activity Feed */}
-        <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#374151' }}>Live Activity</div>
-            <button
-              onClick={() => go('audit-trail')}
-              style={{ fontSize: 11, fontWeight: 600, color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
-            >
-              View All <ArrowRight style={{ width: 12, height: 12 }} />
-            </button>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            {ACTIVITY_FEED.map((act, i) => (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10,
-                padding: '10px 8px', borderRadius: 10,
-                borderBottom: i < ACTIVITY_FEED.length - 1 ? '1px solid #f1f5f9' : 'none',
-                cursor: 'default', transition: 'background 0.12s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = '#f7f8fa'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-              >
-                <div style={{
-                  width: 32, height: 32, borderRadius: '50%',
-                  background: act.bg, border: `1.5px solid ${act.border}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 11, fontWeight: 700, color: act.color, flexShrink: 0,
-                }}>
-                  {act.icon}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: '#111827', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{act.title}</div>
-                  <div style={{ fontSize: 10, color: '#9ca3af', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{act.bidder}</div>
-                </div>
-                <span style={{
-                  fontSize: 9, fontWeight: 700, padding: '3px 7px', borderRadius: 6,
-                  background: act.bg, border: `1px solid ${act.border}`, color: act.color,
-                  whiteSpace: 'nowrap', flexShrink: 0,
-                }}>
-                  {act.result}
-                </span>
-              </div>
-            ))}
-          </div>
-        </Card>
+          {/* Half-circle segmented Gauge (100% bug-free SVG) */}
+          <AnalyticsGauge />
+        </FencoCard>
       </div>
 
-      {/* ══ ROW 3 — Quick Bid Review (Demo Scenarios) ══ */}
-      <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#374151' }}>Quick Bid Review — Demo Scenarios</div>
-          <span style={{ fontSize: 10, color: '#9ca3af' }}>Click any bidder to open full compliance review</span>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
-          {DEMO_SCENARIOS.map((sc) => (
-            <button
-              key={sc.id}
-              id={`demo-${sc.id}`}
-              onClick={() => go('bidder-detail', { bidderId: sc.id, bidderName: sc.label })}
-              style={{
-                background: '#f7f8fa', border: '1.5px solid #e5e7eb',
-                borderRadius: 16, padding: '16px 14px',
-                textAlign: 'left', cursor: 'pointer', transition: 'all 0.15s ease',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = sc.dot; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#f7f8fa'; e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.boxShadow = 'none'; }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: sc.dot, marginTop: 3 }} />
-                <span style={{
-                  fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
-                  background: sc.color + '18', color: sc.color,
-                }}>{sc.risk}</span>
-              </div>
-              <div style={{ fontSize: 13, fontWeight: 800, color: '#111827', marginBottom: 4 }}>{sc.score}</div>
-              <div style={{ fontSize: 10, color: '#9ca3af', lineHeight: 1.4, fontWeight: 500 }}>{sc.label}</div>
-              {/* Score bar */}
-              <div style={{ marginTop: 10, height: 4, borderRadius: 999, background: '#e5e7eb', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${sc.score}%`, background: sc.dot, borderRadius: 999 }} />
-              </div>
-            </button>
-          ))}
-        </div>
-      </Card>
+      {/* ── ROW 2: Last Transactions + Expenses & Income + More Features ── */}
+      <div
+        className="grid gap-5"
+        style={{
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        }}
+      >
+        {/* Last Transactions Card */}
+        <FencoCard>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 16,
+            }}
+          >
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
+              Last Transactions
+            </div>
+            <MenuDots />
+          </div>
 
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {TRANSACTIONS.map((tx, i) => (
+              <div
+                key={i}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  cursor: 'pointer',
+                  padding: '6px 0',
+                }}
+                onClick={() => go('tenders')}
+              >
+                {/* Circle Icon */}
+                <div
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: '50%',
+                    background: '#1e2433',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 16,
+                    flexShrink: 0,
+                  }}
+                >
+                  {tx.icon}
+                </div>
+
+                {/* Company & Date */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: '#1e2433',
+                      truncate: true,
+                    }}
+                  >
+                    {tx.company}
+                  </div>
+                  <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
+                    {tx.sub}
+                  </div>
+                </div>
+
+                {/* Amount */}
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#1e2433' }}>
+                  {tx.amount}
+                </div>
+
+                {/* Action */}
+                <MenuDots />
+              </div>
+            ))}
+          </div>
+        </FencoCard>
+
+        {/* Expenses & Income Card + Dark More Features Banner */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <FencoCard>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 16,
+              }}
+            >
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
+                Expenses & Income
+              </div>
+              <MenuDots />
+            </div>
+
+            {/* 60% Expenses  ·  40% Income */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                marginBottom: 14,
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 28, fontWeight: 800, color: '#1e2433' }}>
+                  60%
+                </div>
+                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 1 }}>
+                  Expenses
+                </div>
+              </div>
+
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 28, fontWeight: 800, color: '#1e2433' }}>
+                  40%
+                </div>
+                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 1 }}>
+                  Income
+                </div>
+              </div>
+            </div>
+
+            {/* Two horizontal rounded pill bars side-by-side (1:1 with Fenco) */}
+            <div style={{ display: 'flex', gap: 10, height: 14, alignItems: 'center' }}>
+              <div
+                style={{
+                  flex: '0 0 58%',
+                  height: 14,
+                  background: '#7494ec',
+                  borderRadius: 999,
+                }}
+              />
+              <div
+                style={{
+                  flex: '1',
+                  height: 14,
+                  background: '#f5d678',
+                  borderRadius: 999,
+                }}
+              />
+            </div>
+          </FencoCard>
+
+          {/* Dark "More features?" Card */}
+          <div
+            style={{
+              background: '#1e2433',
+              borderRadius: 24,
+              padding: '20px 24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 16,
+              boxShadow: '0 4px 18px rgba(30, 36, 51, 0.15)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 12,
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#ffffff',
+                  fontSize: 18,
+                  flexShrink: 0,
+                }}
+              >
+                💎
+              </div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#ffffff' }}>
+                  More features?
+                </div>
+                <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.55)', marginTop: 2 }}>
+                  Update your account to premium to get more features
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => go('tenders')}
+              style={{
+                background: '#ffffff',
+                color: '#1e2433',
+                fontWeight: 700,
+                fontSize: 12,
+                padding: '10px 18px',
+                borderRadius: 999,
+                border: 'none',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+                transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              Go to premium
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
