@@ -161,6 +161,15 @@ def _seed_tender_1(db: Session):
             "incorporation_date": "2022-06-01", "claims_msme": False,
             "local_content_pct": 48.0, "compliance_score": 42.0, "risk_level": "HIGH",
             "verification_progress": 100.0, "overall_status": "REVIEW_REQUIRED"
+        },
+        {
+            "id": "BIDDER-F", "tender_id": tender_id,
+            "company_name": "Zenith Safety Equipment Pvt. Ltd.",
+            "gstin": "27ZENIT1234E1Z0", "pan": "ZENIT1234E",
+            "udyam_id": "UDYAM-MH-01-0099887", "company_type": "Pvt Ltd",
+            "incorporation_date": "2018-05-12", "claims_msme": True,
+            "local_content_pct": 70.0, "compliance_score": 92.0, "risk_level": "LOW",
+            "verification_progress": 100.0, "overall_status": "VERIFIED"
         }
     ]
 
@@ -184,6 +193,8 @@ def _seed_tender_1(db: Session):
             _seed_bidder4(db, b)
         elif bd["id"] == "BIDDER-E":
             _seed_bidder5(db, b)
+        elif bd["id"] == "BIDDER-F":
+            _seed_bidder6(db, b)
 
 
 # ===========================================================================
@@ -700,6 +711,60 @@ def _seed_bidder5(db: Session, b: Bidder):
         critical_issues_count=2, medium_issues_count=0,
         score_breakdown_json=json.dumps({"GST": 10, "PAN": 10, "OEM": 0, "Debarment": 0, "ITR": 15, "MII": 0, "Fuzzy": 0}),
         reasons_json=json.dumps(["CRITICAL: Fuzzy name match to debarred entity (Track B)."])))
+    db.commit()
+
+
+def _seed_bidder6(db: Session, b: Bidder):
+    _clear_bidder_children(db, b.id)
+
+    d1 = Document(id="DOC-F-GST", bidder_id=b.id, file_name="Zenith_GST_Certificate.pdf",
+        file_path="/mock_docs/Zenith_GST_Certificate.pdf", file_size=820000,
+        classified_type="GST Certificate", doc_type="TAX_CERTIFICATE",
+        classification_confidence=0.98, status="CONFIRMED",
+        extracted_fields=json.dumps({"gstin": "27ZENIT1234E1Z0", "legal_name": "Zenith Safety Equipment Pvt. Ltd.", "filing_status": "UP_TO_DATE", "certificate_date": "2026-08-01"}),
+        confirmed_fields=json.dumps({"gstin": "27ZENIT1234E1Z0", "legal_name": "Zenith Safety Equipment Pvt. Ltd.", "filing_status": "UP_TO_DATE", "certificate_date": "2026-08-01"}),
+        confirmed_by="procurement.officer@demo.gov.in", confirmed_at=datetime.now(timezone.utc))
+
+    d2 = Document(id="DOC-F-OEM", bidder_id=b.id, file_name="OEM_Authorization_Zenith.pdf",
+        file_path="/mock_docs/OEM_Authorization_Zenith.pdf", file_size=740000,
+        classified_type="OEM Authorization", doc_type="OEM_AUTH_LETTER",
+        classification_confidence=0.96, status="CONFIRMED",
+        extracted_fields=json.dumps({"issuing_entity": "Suraksha Global Safety Corp", "authorized_entity": "Zenith Safety Equipment Pvt. Ltd.", "product_category": "Safety Equipment", "issue_date": "2024-02-15", "expiry_date": "2028-12-31", "signature_present": True}),
+        confirmed_fields=json.dumps({"issuing_entity": "Suraksha Global Safety Corp", "authorized_entity": "Zenith Safety Equipment Pvt. Ltd.", "product_category": "Safety Equipment", "issue_date": "2024-02-15", "expiry_date": "2028-12-31", "signature_present": True}),
+        confirmed_by="procurement.officer@demo.gov.in", confirmed_at=datetime.now(timezone.utc))
+    
+    db.add_all([d1, d2])
+    db.commit()
+
+    db.add_all([
+        VerificationCheck(id=f"CHK-EX-GST-{b.id}", bidder_id=b.id, check_type="EXACT", module="GSTIN_VALIDITY", result="PASS",
+            reason=f"GSTIN '{b.gstin}' active on GST portal and GSTR-3B filings up to date",
+            source_fields=json.dumps({"doc_gstin": b.gstin, "registry_status": "ACTIVE"})),
+        VerificationCheck(id=f"CHK-EX-PAN-{b.id}", bidder_id=b.id, check_type="EXACT", module="PAN_MATCH", result="PASS",
+            reason=f"PAN '{b.pan}' matches legal entity name on Income Tax registry",
+            source_fields=json.dumps({"pan": b.pan, "registry_name": b.company_name})),
+    ])
+
+    db.add_all([
+        ComplianceRuleResult(bidder_id=b.id, requirement_id="REQ-GST-001", requirement_title="GST Registration",
+            status="VERIFIED", extracted_value="27ZENIT1234E1Z0", verified_value="Active",
+            verification_source="GST", confidence=0.98, evidence_doc_id=d1.id, evidence_file_name=d1.file_name,
+            rule_explanation="GSTIN active and legal name matches submission exactly."),
+        ComplianceRuleResult(bidder_id=b.id, requirement_id="REQ-OEM-001", requirement_title="OEM Manufacturer Authorization",
+            status="VERIFIED", extracted_value="Valid till 2028-12-31", verified_value="VERIFIED",
+            verification_source="OEM Registry", confidence=0.96, evidence_doc_id=d2.id, evidence_file_name=d2.file_name,
+            rule_explanation="Valid OEM authorization. Issue date after incorporation — consistent."),
+    ])
+
+    db.add(AIFinding(bidder_id=b.id, title="Verified: Fully Compliant",
+        severity="VERIFIED", description="Zenith satisfies all criteria with no deviations or risk markers.",
+        document_value=b.company_name, verified_value="Fully Compliant",
+        source="Evaluation Module", confidence=0.97, recommendation="QUALIFY bidder."))
+
+    db.add(RiskAssessment(bidder_id=b.id, compliance_score=92.0, risk_level="LOW",
+        critical_issues_count=0, medium_issues_count=0,
+        score_breakdown_json=json.dumps({"GST": 15, "PAN": 15, "OEM": 15, "Debarment": 15, "ITR": 12, "MII": 10, "Fuzzy": 10}),
+        reasons_json=json.dumps(["All checks passed.", "Document signatures verified."])))
     db.commit()
 
 

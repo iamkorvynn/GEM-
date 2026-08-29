@@ -63,6 +63,16 @@ class GSTVerificationAdapter(BaseVerificationAdapter):
             "address": "Industrial Area, Okhla Phase III, New Delhi 110020",
             "filing_status_gstr3b": "UP_TO_DATE"
         },
+        "27ZENIT1234E1Z0": {
+            "gstin": "27ZENIT1234E1Z0",
+            "legal_name": "Zenith Safety Equipment Pvt. Ltd.",
+            "trade_name": "Zenith Safety",
+            "registration_status": "ACTIVE",
+            "taxpayer_type": "Regular",
+            "registration_date": "2018-05-12",
+            "address": "Sector 4, MIDC Industrial Area, Pune, Maharashtra 411026",
+            "filing_status_gstr3b": "UP_TO_DATE"
+        },
         # --- Tender 2 (Medical Equipment) ---
         "27MEDTC1234A1Z5": {
             "gstin": "27MEDTC1234A1Z5",
@@ -192,6 +202,13 @@ class PANVerificationAdapter(BaseVerificationAdapter):
             "status": "VALID",
             "aadhaar_seeding": "NOT_APPLICABLE"
         },
+        "ZENIT1234E": {
+            "pan": "ZENIT1234E",
+            "name": "ZENITH SAFETY EQUIPMENT PVT. LTD.",
+            "category": "Company",
+            "status": "VALID",
+            "aadhaar_seeding": "NOT_APPLICABLE"
+        },
         # --- Tender 2 ---
         "MEDTC1234A": {
             "pan": "MEDTC1234A",
@@ -313,6 +330,14 @@ class UdyamVerificationAdapter(BaseVerificationAdapter):
             "major_activity": "Services",
             "status": "ACTIVE",
             "nic_code": "62099 - Other information technology service activities"
+        },
+        "UDYAM-MH-01-0099887": {
+            "udyam_number": "UDYAM-MH-01-0099887",
+            "enterprise_name": "Zenith Safety Equipment Pvt. Ltd.",
+            "enterprise_type": "SMALL",
+            "major_activity": "Manufacturing",
+            "status": "ACTIVE",
+            "nic_code": "32909 - Manufacture of safety equipment"
         }
     }
 

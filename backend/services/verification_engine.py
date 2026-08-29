@@ -235,6 +235,12 @@ MCA21_DATABASE = {
         "incorporation_date": "2020-09-15",
         "directors": ["Deepak Verma", "Sunita Patel"],
     },
+    "ZENIT1234E": {
+        "pan": "ZENIT1234E",
+        "company_name": "Zenith Safety Equipment Pvt. Ltd.",
+        "incorporation_date": "2018-05-12",
+        "directors": ["Anand Shah", "Meera Sen"],
+    },
 }
 
 def track_c_correlation(
