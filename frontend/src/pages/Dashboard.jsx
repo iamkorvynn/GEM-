@@ -1,47 +1,58 @@
 import React, { useEffect, useState } from 'react';
 import {
-  MoreVertical, ChevronRight, TrendingUp, Sparkles,
-  ShieldCheck, CreditCard, ArrowRight
+  TrendingUp, ShieldCheck, ChevronRight, MoreVertical,
+  CheckCircle2, AlertTriangle, ShieldAlert, ArrowRight,
+  FileText, Users, Clock, Layers
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { fetchDashboardStats } from '../services/api';
 
-/* ── Circle avatar row data ────────────────────────────────────────── */
-const TEAM_AVATARS = [
+/* ── Officer reviewers list ────────────────────────────────────────── */
+const REVIEWER_TEAM = [
   { name: 'Rajesh Sharma',   initials: 'RS', bg: '#dbeafe', color: '#1d4ed8' },
   { name: 'Priya V.',        initials: 'PV', bg: '#f3e8ff', color: '#7e22ce' },
   { name: 'Arun Mehta',      initials: 'AM', bg: '#dcfce7', color: '#15803d' },
   { name: 'Kavita Rao',      initials: 'KR', bg: '#ffedd5', color: '#c2410c' },
   { name: 'Vikram Seth',     initials: 'VS', bg: '#fee2e2', color: '#b91c1c' },
-  { name: 'Ananya Sen',      initials: 'AS', bg: '#e0e7ff', color: '#4338ca' },
-  { name: 'Sanjay Dutt',     initials: 'SD', bg: '#fef3c7', color: '#b45309' },
 ];
 
-/* ── Recent bids / transactions ────────────────────────────────────── */
-const TRANSACTIONS = [
+/* ── Recent Bid Submissions (Real GeM data) ────────────────────────── */
+const RECENT_SUBMISSIONS = [
   {
-    id: 'BID-001',
-    company: 'Apple Systems India',
-    sub: 'Industrial Tech · 03 April, 2026',
-    amount: '$653',
-    inr: '₹54,200',
-    icon: '🍎',
+    id: 'BIDDER-A',
+    name: 'ABC Industrial Solutions Pvt. Ltd.',
+    tender: 'GEM/2026/B/784921 · Industrial Safety Gear',
+    value: '₹2.50 Cr',
+    status: 'QUALIFIED',
+    risk: 'LOW',
+    color: '#15803d',
+    bg: '#f0fdf4',
+    border: '#bbf7d0',
+    icon: '🏗️',
   },
   {
-    id: 'BID-002',
-    company: 'Ralph Edwards Logistics',
-    sub: 'Supply & Freight · 01 April, 2026',
-    amount: '$2,643',
-    inr: '₹2,19,400',
-    icon: '📦',
+    id: 'BIDDER-B',
+    name: 'Nova Safety Systems & Controls',
+    tender: 'GEM/2026/B/784921 · Fire Alarm System',
+    value: '₹1.15 Cr',
+    status: 'REVIEW',
+    risk: 'MEDIUM',
+    color: '#92400e',
+    bg: '#fffbeb',
+    border: '#fde68a',
+    icon: '🚨',
   },
   {
-    id: 'BID-003',
-    company: 'Jerome Bell Hardware',
-    sub: 'Safety Equipment · 27 March, 2026',
-    amount: '$20',
-    inr: '₹1,660',
-    icon: '🔧',
+    id: 'BIDDER-C',
+    name: 'Alpha Tech Enterprises Ltd.',
+    tender: 'GEM/2026/B/891042 · IT Infrastructure',
+    value: '₹4.80 Cr',
+    status: 'HIGH RISK',
+    risk: 'HIGH',
+    color: '#991b1b',
+    bg: '#fef2f2',
+    border: '#fecaca',
+    icon: '🖥️',
   },
 ];
 
@@ -88,23 +99,14 @@ function MenuDots() {
   );
 }
 
-/* ── Segmented Half-Circle Gauge 1:1 with Fenco UI ─────────────────── */
-function AnalyticsGauge() {
-  // Arc math:
-  // Semi-circle from (20, 85) to (150, 85) with radius 65.
-  // Arc length = pi * 65 = 204.2
-  // Segments:
-  //   Total filled: 90% (183.8 / 204.2)
-  //   Blue (Done): 60% (122.5)
-  //   Yellow (In progress): 20% (from 60% to 80% = 163.4)
-  //   Red/Pink (To do): 10% (from 80% to 90% = 183.8)
-  //   Remaining: 10% (unfilled track)
+/* ── Segmented Half-Circle Gauge ───────────────────────────────────── */
+function ComplianceGauge({ pct = 88 }) {
   const totalLen = 204.2;
 
   return (
     <div style={{ position: 'relative', width: 170, margin: '8px auto 0' }}>
       <svg width="170" height="96" viewBox="0 0 170 96" style={{ display: 'block' }}>
-        {/* Background gray track */}
+        {/* Background track */}
         <path
           d="M 20,85 A 65,65 0 0,1 150,85"
           fill="none"
@@ -112,27 +114,27 @@ function AnalyticsGauge() {
           strokeWidth="13"
           strokeLinecap="round"
         />
-        {/* Pink/Red segment (To do — extends to 90%) */}
+        {/* Track C: Red/Coral segment (High Risk / Flagged — up to 88%) */}
         <path
           d="M 20,85 A 65,65 0 0,1 150,85"
           fill="none"
           stroke="#e88b8b"
           strokeWidth="13"
-          strokeDasharray={`${totalLen * 0.90} ${totalLen}`}
+          strokeDasharray={`${totalLen * 0.88} ${totalLen}`}
           strokeDashoffset="0"
           strokeLinecap="round"
         />
-        {/* Yellow segment (In progress — extends to 80%) */}
+        {/* Track B: Yellow segment (Under Review / Fuzzy — up to 76%) */}
         <path
           d="M 20,85 A 65,65 0 0,1 150,85"
           fill="none"
           stroke="#f5d678"
           strokeWidth="13"
-          strokeDasharray={`${totalLen * 0.80} ${totalLen}`}
+          strokeDasharray={`${totalLen * 0.76} ${totalLen}`}
           strokeDashoffset="0"
           strokeLinecap="round"
         />
-        {/* Blue segment (Done — extends to 60%) */}
+        {/* Track A: Blue segment (Fully Verified / Exact — up to 60%) */}
         <path
           d="M 20,85 A 65,65 0 0,1 150,85"
           fill="none"
@@ -155,10 +157,10 @@ function AnalyticsGauge() {
         }}
       >
         <div style={{ fontSize: 24, fontWeight: 800, color: '#1e2433', lineHeight: 1.1 }}>
-          90%
+          {pct}%
         </div>
-        <div style={{ fontSize: 11, fontWeight: 500, color: '#9ca3af', marginTop: 2 }}>
-          Done
+        <div style={{ fontSize: 11, fontWeight: 600, color: '#9ca3af', marginTop: 2 }}>
+          Evaluated
         </div>
       </div>
     </div>
@@ -168,8 +170,8 @@ function AnalyticsGauge() {
 export default function Dashboard({ go, showToast }) {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const officerName = user?.name || 'Alif Reza';
-  const firstName = officerName.split(' ')[0] || 'Alif';
+  const officerName = user?.name || 'Officer Rajesh Sharma';
+  const firstName = officerName.split(' ')[0] || 'Officer';
 
   useEffect(() => {
     fetchDashboardStats()
@@ -192,27 +194,26 @@ export default function Dashboard({ go, showToast }) {
       className="p-6 md:p-8 space-y-6"
       style={{ background: '#f0f2f5', minHeight: '100%', color: '#1e2433' }}
     >
-      {/* ── Top Header Row: Greeting + Circle Avatar Row ── */}
+      {/* ── Top Header Row: Officer Greeting + Procurement Team ── */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        {/* Left greeting */}
         <div>
           <h1
             style={{
-              fontSize: '32px',
+              fontSize: '30px',
               fontWeight: 800,
               color: '#1e2433',
               lineHeight: 1.2,
               letterSpacing: '-0.02em',
             }}
           >
-            Hello, <span style={{ color: '#7494ec' }}>{officerName}</span>
+            Welcome, <span style={{ color: '#7494ec' }}>{officerName}</span>
           </h1>
           <p style={{ fontSize: '13px', color: '#9ca3af', marginTop: '4px' }}>
-            View and control your finances & procurement compliance here!
+            GeM Bid Compliance Verification Platform · AI-driven 3-track procurement intelligence
           </p>
         </div>
 
-        {/* Right circle avatar row */}
+        {/* Right review team avatars */}
         <div
           className="flex items-center gap-1.5 px-3 py-2 rounded-full"
           style={{
@@ -222,20 +223,23 @@ export default function Dashboard({ go, showToast }) {
             alignSelf: 'flex-start',
           }}
         >
-          {TEAM_AVATARS.map((av, i) => (
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', marginRight: 6 }}>
+            Evaluation Panel:
+          </span>
+          {REVIEWER_TEAM.map((av, i) => (
             <div
               key={i}
               title={av.name}
               style={{
-                width: 34,
-                height: 34,
+                width: 32,
+                height: 32,
                 borderRadius: '50%',
                 background: av.bg,
                 color: av.color,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: 700,
                 border: '2px solid #ffffff',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
@@ -247,7 +251,8 @@ export default function Dashboard({ go, showToast }) {
           ))}
           <button
             type="button"
-            title="Next"
+            onClick={() => go('audit-trail')}
+            title="View Audit Trail"
             style={{
               width: 28,
               height: 28,
@@ -267,17 +272,17 @@ export default function Dashboard({ go, showToast }) {
         </div>
       </div>
 
-      {/* ── ROW 1: Balance Statistics + Blue Credit Card + Analytics ── */}
+      {/* ── ROW 1: Bid Evaluation Statistics + Tender Health Overview + Compliance Analytics ── */}
       <div
         className="grid gap-5"
         style={{
           gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))',
         }}
       >
-        {/* Card 1: Balance Statistics */}
+        {/* Card 1: Evaluation Statistics */}
         <FencoCard>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#374151', marginBottom: 10 }}>
-            Balance Statistics
+            Evaluation Statistics
           </div>
 
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 24 }}>
@@ -289,19 +294,17 @@ export default function Dashboard({ go, showToast }) {
                 letterSpacing: '-0.02em',
               }}
             >
-              $38,729.61
+              48 Bidders
             </span>
             <span style={{ fontSize: 11, color: '#9ca3af', fontWeight: 500 }}>
-              Total amount
+              Across 12 tenders
             </span>
           </div>
 
-          {/* Bottom row: Wave sparkline on left, vertical pill bars on right */}
+          {/* Bottom row: Wave curve on left, vertical month bars on right */}
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-            {/* Left: wave curve + 14% badge */}
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                {/* SVG wave sparkline */}
                 <svg width="68" height="24" viewBox="0 0 68 24" fill="none">
                   <path
                     d="M 2,18 C 16,18 20,4 34,4 C 48,4 52,18 66,18"
@@ -311,13 +314,12 @@ export default function Dashboard({ go, showToast }) {
                   />
                 </svg>
 
-                {/* 14% badge */}
                 <span
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 3,
-                    border: '1.5px solid #374151',
+                    border: '1.5px solid #1e2433',
                     borderRadius: 999,
                     padding: '2px 7px',
                     fontSize: 10,
@@ -325,16 +327,16 @@ export default function Dashboard({ go, showToast }) {
                     color: '#1e2433',
                   }}
                 >
-                  <TrendingUp style={{ width: 11, height: 11 }} /> 14%
+                  <TrendingUp style={{ width: 11, height: 11 }} /> +14%
                 </span>
               </div>
 
               <div style={{ fontSize: 10, color: '#9ca3af', lineHeight: 1.3 }}>
-                Always see<br />your earning updates
+                Verified submissions<br />cleared this cycle
               </div>
             </div>
 
-            {/* Right: vertical month bars */}
+            {/* Vertical bars */}
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
               {[
                 { month: 'Nov', height: 14 },
@@ -362,126 +364,101 @@ export default function Dashboard({ go, showToast }) {
           </div>
         </FencoCard>
 
-        {/* Card 2: THE BANK OF ANYTHING (Fenco Blue Card Mockup) */}
-        <div
+        {/* Card 2: Tender Pipeline Health (Replaces credit card with procurement stats) */}
+        <FencoCard
           style={{
-            background: 'linear-gradient(135deg, #7494ec 0%, #5d7fe8 100%)',
-            borderRadius: 24,
-            padding: '22px 24px',
-            color: '#ffffff',
-            boxShadow: '0 8px 24px rgba(116, 148, 236, 0.28)',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            position: 'relative',
-            overflow: 'hidden',
-            minHeight: 190,
+            background: 'linear-gradient(145deg, #ffffff 0%, #f9fafb 100%)',
           }}
         >
-          {/* Subtle background curved wave overlay */}
-          <div
-            style={{
-              position: 'absolute',
-              right: -30,
-              top: -30,
-              width: 180,
-              height: 180,
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.08)',
-              pointerEvents: 'none',
-            }}
-          />
-
-          {/* Card header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
+              Tender Pipeline Status
+            </div>
             <span
               style={{
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: 700,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                opacity: 0.9,
+                padding: '3px 8px',
+                borderRadius: 999,
+                background: '#eff6ff',
+                color: '#2563eb',
+                border: '1px solid #bfdbfe',
               }}
             >
-              THE BANK OF ANYTHING
+              12 Active
             </span>
           </div>
 
-          {/* Gold EMV Chip */}
-          <div style={{ margin: '14px 0 10px' }}>
+          <div style={{ margin: '14px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div
               style={{
-                width: 36,
-                height: 26,
-                background: 'linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%)',
-                borderRadius: 6,
-                border: '1px solid rgba(0, 0, 0, 0.1)',
-                boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.4)',
+                padding: '12px 14px',
+                borderRadius: 18,
+                background: '#f0fdf4',
+                border: '1px solid #bbf7d0',
               }}
-            />
+            >
+              <div style={{ fontSize: 10, fontWeight: 700, color: '#15803d', textTransform: 'uppercase' }}>
+                Verified Clean
+              </div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: '#15803d', marginTop: 2 }}>
+                31
+              </div>
+              <div style={{ fontSize: 10, color: '#16a34a' }}>
+                Track A cleared
+              </div>
+            </div>
+
+            <div
+              style={{
+                padding: '12px 14px',
+                borderRadius: 18,
+                background: '#fef2f2',
+                border: '1px solid #fecaca',
+              }}
+            >
+              <div style={{ fontSize: 10, fontWeight: 700, color: '#991b1b', textTransform: 'uppercase' }}>
+                Discrepancies
+              </div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: '#991b1b', marginTop: 2 }}>
+                6
+              </div>
+              <div style={{ fontSize: 10, color: '#dc2626' }}>
+                Requires review
+              </div>
+            </div>
           </div>
 
-          {/* Dots + 4 digits */}
-          <div
+          <button
+            type="button"
+            onClick={() => go('tenders')}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 16,
-              fontSize: 14,
-              fontWeight: 700,
-              letterSpacing: '0.15em',
-            }}
-          >
-            <span>••••</span>
-            <span>••••</span>
-            <span>••••</span>
-            <span style={{ letterSpacing: '0.05em' }}>2734</span>
-          </div>
-
-          {/* Expiry + Name + Mastercard Circles */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'flex-end',
               justifyContent: 'space-between',
-              marginTop: 10,
+              width: '100%',
+              padding: '11px 16px',
+              borderRadius: 14,
+              background: '#1e2433',
+              color: '#ffffff',
+              fontSize: 12,
+              fontWeight: 700,
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
             }}
+            onMouseEnter={e => e.currentTarget.style.background = '#2b3447'}
+            onMouseLeave={e => e.currentTarget.style.background = '#1e2433'}
           >
-            <div>
-              <div style={{ fontSize: 9, opacity: 0.7, letterSpacing: '0.05em' }}>
-                3/18 &nbsp; 3/28
-              </div>
-              <div style={{ fontSize: 13, fontWeight: 700, marginTop: 1 }}>
-                {officerName}
-              </div>
-            </div>
+            <span>Inspect Tenders</span>
+            <ArrowRight style={{ width: 14, height: 14 }} />
+          </button>
+        </FencoCard>
 
-            {/* Red & Yellow overlapping circles */}
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <div
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: '50%',
-                  background: '#ef4444',
-                  opacity: 0.9,
-                }}
-              />
-              <div
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: '50%',
-                  background: '#f59e0b',
-                  marginLeft: -10,
-                  opacity: 0.9,
-                }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Card 3: Analytics (Done / In progress / To do + 90% Done Gauge) */}
+        {/* Card 3: Verification Analytics Gauge */}
         <FencoCard>
           <div
             style={{
@@ -492,17 +469,17 @@ export default function Dashboard({ go, showToast }) {
             }}
           >
             <div style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
-              Analytics
+              Verification Pipeline
             </div>
             <MenuDots />
           </div>
 
-          {/* Legend dots */}
+          {/* Legend */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
             {[
-              { label: 'Done', color: '#7494ec' },
-              { label: 'In progres', color: '#f5d678' },
-              { label: 'To do', color: '#e88b8b' },
+              { label: 'Track A (Exact Match)', color: '#7494ec' },
+              { label: 'Track B (Fuzzy OCR)', color: '#f5d678' },
+              { label: 'Track C (Cross-Adapter Flag)', color: '#e88b8b' },
             ].map((item, i) => (
               <div
                 key={i}
@@ -510,7 +487,7 @@ export default function Dashboard({ go, showToast }) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 8,
-                  fontSize: 12,
+                  fontSize: 11,
                   color: '#4b5563',
                   fontWeight: 500,
                 }}
@@ -530,19 +507,19 @@ export default function Dashboard({ go, showToast }) {
             ))}
           </div>
 
-          {/* Half-circle segmented Gauge (100% bug-free SVG) */}
-          <AnalyticsGauge />
+          {/* Half-circle segmented Gauge */}
+          <ComplianceGauge pct={88} />
         </FencoCard>
       </div>
 
-      {/* ── ROW 2: Last Transactions + Expenses & Income + More Features ── */}
+      {/* ── ROW 2: Recent Submissions + Compliance & Risk Distribution ── */}
       <div
         className="grid gap-5"
         style={{
           gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
         }}
       >
-        {/* Last Transactions Card */}
+        {/* Recent Bidder Submissions */}
         <FencoCard>
           <div
             style={{
@@ -552,14 +529,32 @@ export default function Dashboard({ go, showToast }) {
               marginBottom: 16,
             }}
           >
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
-              Last Transactions
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
+                Recent Bidder Submissions
+              </div>
+              <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 1 }}>
+                Pending and processed tender submissions
+              </div>
             </div>
-            <MenuDots />
+            <button
+              type="button"
+              onClick={() => go('tenders')}
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: '#7494ec',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              View All
+            </button>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {TRANSACTIONS.map((tx, i) => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {RECENT_SUBMISSIONS.map((tx, i) => (
               <div
                 key={i}
                 style={{
@@ -567,16 +562,22 @@ export default function Dashboard({ go, showToast }) {
                   alignItems: 'center',
                   gap: 12,
                   cursor: 'pointer',
-                  padding: '6px 0',
+                  padding: '8px 10px',
+                  borderRadius: 14,
+                  background: '#f9fafb',
+                  border: '1px solid #f0f2f5',
+                  transition: 'all 0.15s ease',
                 }}
-                onClick={() => go('tenders')}
+                onClick={() => go('bidder-detail', { bidderId: tx.id, bidderName: tx.name })}
+                onMouseEnter={e => e.currentTarget.style.background = '#ffffff'}
+                onMouseLeave={e => e.currentTarget.style.background = '#f9fafb'}
               >
-                {/* Circle Icon */}
+                {/* Icon avatar */}
                 <div
                   style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: '50%',
+                    width: 38,
+                    height: 38,
+                    borderRadius: 12,
                     background: '#1e2433',
                     color: '#ffffff',
                     display: 'flex',
@@ -589,36 +590,61 @@ export default function Dashboard({ go, showToast }) {
                   {tx.icon}
                 </div>
 
-                {/* Company & Date */}
+                {/* Company & Tender */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div
                     style={{
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: 700,
                       color: '#1e2433',
-                      truncate: true,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
                     }}
                   >
-                    {tx.company}
+                    {tx.name}
                   </div>
-                  <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
-                    {tx.sub}
+                  <div
+                    style={{
+                      fontSize: 10,
+                      color: '#9ca3af',
+                      marginTop: 2,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {tx.tender}
                   </div>
                 </div>
 
-                {/* Amount */}
-                <div style={{ fontSize: 13, fontWeight: 800, color: '#1e2433' }}>
-                  {tx.amount}
+                {/* Value & Badge */}
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: '#1e2433' }}>
+                    {tx.value}
+                  </div>
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      marginTop: 2,
+                      fontSize: 9,
+                      fontWeight: 700,
+                      padding: '1px 6px',
+                      borderRadius: 999,
+                      background: tx.bg,
+                      color: tx.color,
+                      border: `1px solid ${tx.border}`,
+                    }}
+                  >
+                    {tx.risk}
+                  </span>
                 </div>
-
-                {/* Action */}
-                <MenuDots />
               </div>
             ))}
           </div>
         </FencoCard>
 
-        {/* Expenses & Income Card + Dark More Features Banner */}
+        {/* Compliance & Risk Distribution + Direct Action */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <FencoCard>
             <div
@@ -630,12 +656,12 @@ export default function Dashboard({ go, showToast }) {
               }}
             >
               <div style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
-                Expenses & Income
+                Compliance & Risk Ratio
               </div>
               <MenuDots />
             </div>
 
-            {/* 60% Expenses  ·  40% Income */}
+            {/* 76% Compliant  ·  24% Flagged */}
             <div
               style={{
                 display: 'flex',
@@ -646,28 +672,28 @@ export default function Dashboard({ go, showToast }) {
             >
               <div>
                 <div style={{ fontSize: 28, fontWeight: 800, color: '#1e2433' }}>
-                  60%
+                  76%
                 </div>
                 <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 1 }}>
-                  Expenses
+                  Compliant Bidders
                 </div>
               </div>
 
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: 28, fontWeight: 800, color: '#1e2433' }}>
-                  40%
+                  24%
                 </div>
                 <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 1 }}>
-                  Income
+                  Under Review / Flagged
                 </div>
               </div>
             </div>
 
-            {/* Two horizontal rounded pill bars side-by-side (1:1 with Fenco) */}
+            {/* Two horizontal rounded pill bars side-by-side */}
             <div style={{ display: 'flex', gap: 10, height: 14, alignItems: 'center' }}>
               <div
                 style={{
-                  flex: '0 0 58%',
+                  flex: '0 0 76%',
                   height: 14,
                   background: '#7494ec',
                   borderRadius: 999,
@@ -684,7 +710,7 @@ export default function Dashboard({ go, showToast }) {
             </div>
           </FencoCard>
 
-          {/* Dark "More features?" Card */}
+          {/* AI Verification Action Card */}
           <div
             style={{
               background: '#1e2433',
@@ -712,14 +738,14 @@ export default function Dashboard({ go, showToast }) {
                   flexShrink: 0,
                 }}
               >
-                💎
+                🛡️
               </div>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 800, color: '#ffffff' }}>
-                  More features?
+                  Ready to Award or Inspect?
                 </div>
                 <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.55)', marginTop: 2 }}>
-                  Update your account to premium to get more features
+                  Access active tenders to run verifications or finalize award decisions
                 </div>
               </div>
             </div>
@@ -743,7 +769,7 @@ export default function Dashboard({ go, showToast }) {
               onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
               onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
             >
-              Go to premium
+              View Tenders
             </button>
           </div>
         </div>
