@@ -209,7 +209,7 @@ export default function Dashboard({ go, showToast }) {
             Welcome, <span style={{ color: '#7494ec' }}>{officerName}</span>
           </h1>
           <p style={{ fontSize: '13px', color: '#9ca3af', marginTop: '4px' }}>
-            GeM Bid Compliance Verification Platform · AI-driven 3-track procurement intelligence
+            BidSatark Compliance Verification Platform · AI-driven 3-track procurement intelligence
           </p>
         </div>
 

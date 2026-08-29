@@ -112,7 +112,7 @@ export default function Sidebar({ currentTab, setCurrentTab }) {
     >
       {/* ── Brand logo ── */}
       <div
-        title="GeM Compliance Platform"
+        title="BidSatark Compliance Platform"
         style={{
           width: 40, height: 40, borderRadius: '50%',
           background: 'linear-gradient(135deg, #f59e0b, #d97706)',
@@ -124,7 +124,7 @@ export default function Sidebar({ currentTab, setCurrentTab }) {
           flexShrink: 0,
         }}
       >
-        G
+        B
       </div>
 
       {/* ── Main nav pill ── */}

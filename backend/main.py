@@ -16,8 +16,8 @@ finally:
     db.close()
 
 app = FastAPI(
-    title="GeM AI Bid Compliance Verification Platform",
-    description="AI-Powered Integrated Bid Compliance Verification Engine for GeM Government Procurement",
+    title="BidSatark | GeM AI Bid Compliance Verification Platform",
+    description="AI-Powered Integrated Bid Compliance Verification Engine (BidSatark) for GeM Government Procurement",
     version="1.0.0"
 )
 

@@ -64,13 +64,13 @@ export default function GemSSOLanding() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
             <div
-              className="px-5 py-3 rounded-2xl text-3xl font-black text-white"
+              className="px-5 py-3 rounded-2xl text-2xl font-black text-white"
               style={{
                 background: 'linear-gradient(135deg, #f59e0b, #d97706)',
                 boxShadow: '0 8px 24px rgba(245,158,11,0.35)',
               }}
             >
-              GeM
+              BidSatark
             </div>
           </div>
           <h1 className="text-2xl font-bold tracking-tight" style={{ color: '#111827' }}>
@@ -88,7 +88,7 @@ export default function GemSSOLanding() {
         >
           <Lock className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
           <div className="text-xs text-blue-800 leading-relaxed">
-            <span className="font-bold text-blue-900">GeM SSO Session Detected.</span>{' '}
+            <span className="font-bold text-blue-900">BidSatark SSO Session Detected.</span>{' '}
             In production, your officer identity is passed automatically from the GeM portal — no
             separate login is required. This selector simulates that handshake for the hackathon prototype.
             <span className="block mt-1 text-blue-600 text-[11px]">
