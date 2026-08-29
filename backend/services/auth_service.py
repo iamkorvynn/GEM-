@@ -1,21 +1,24 @@
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 
 # ── Config ─────────────────────────────────────────────────────────────────
 SECRET_KEY = "gem-sih26100-super-secret-jwt-key-change-in-production"
 ALGORITHM  = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 8
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 # ── Password helpers ────────────────────────────────────────────────────────
 def hash_password(plain: str) -> str:
-    return pwd_context.hash(plain)
+    pwd_bytes = plain.encode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(pwd_bytes, salt)
+    return hashed.decode('utf-8')
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    pwd_bytes = plain.encode('utf-8')
+    hashed_bytes = hashed.encode('utf-8')
+    return bcrypt.checkpw(pwd_bytes, hashed_bytes)
 
 # ── JWT helpers ─────────────────────────────────────────────────────────────
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:

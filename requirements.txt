@@ -7,4 +7,4 @@ reportlab
 jinja2
 pytest
 python-jose[cryptography]
-passlib[bcrypt]
+bcrypt
