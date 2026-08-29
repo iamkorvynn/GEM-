@@ -152,6 +152,28 @@ def track_a_exact_checks(
             "EPFO/ESIC compliance verified — no adverse flag",
             {"compliance_flag": epfo_flag}))
 
+    # -- Check 5: Startup India Recognition --
+    if bidder.get("claims_startup"):
+        startup_rec = mock_registries.get("Startup India", {})
+        recognition_status = startup_rec.get("recognition_status", "NOT_FOUND")
+        dipp_number = startup_rec.get("dipp_number", "N/A")
+        if startup_rec.get("status") == "FAILED" or recognition_status != "RECOGNIZED":
+            checks.append(_make_check("EXACT", "STARTUP_INDIA_STATUS", "FAIL",
+                f"Startup India claim failed: no active recognition found on DPIIT registry (status: {recognition_status})",
+                {"claims_startup": True, "dipp_number": dipp_number, "status": recognition_status}))
+        else:
+            sectors_str = ", ".join(startup_rec.get("sectors", []))
+            checks.append(_make_check("EXACT", "STARTUP_INDIA_STATUS", "PASS",
+                f"Startup India recognized under DIPP Number {dipp_number} (sectors: {sectors_str})",
+                {"claims_startup": True, "dipp_number": dipp_number, "status": recognition_status}))
+
+    # -- Check 6: NSIC Registration & Monetary Limit --
+    nsic_rec = mock_registries.get("NSIC", {})
+    if nsic_rec.get("status") == "VERIFIED":
+        checks.append(_make_check("EXACT", "NSIC_REGISTRATION", "PASS",
+            f"NSIC GP Registration active (Cert No: {nsic_rec.get('nsic_certificate_no')}, limit: {nsic_rec.get('monetary_limit')})",
+            {"nsic_registered": True, "cert_no": nsic_rec.get("nsic_certificate_no"), "limit": nsic_rec.get("monetary_limit")}))
+
     return checks
 
 

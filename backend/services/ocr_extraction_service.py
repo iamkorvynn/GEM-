@@ -10,7 +10,9 @@ class OCRAndExtractionService:
         "OEM Authorization": [r"Manufacturer Authorization", r"OEM Authorization", r"Authorized Signatory", r"distribute", r"resell"],
         "ITR Document": [r"INDIAN INCOME TAX RETURN", r"ITR-V", r"Acknowledgement Number", r"Assessment Year"],
         "Make in India Declaration": [r"Make in India", r"Local Content", r"Class-I Local Supplier", r"Class-II Local Supplier"],
-        "Debarment Declaration": [r"Non-blacklisting", r"Debarment Declaration", r"Affidavit", r"not debarred", r"not blacklisted"]
+        "Debarment Declaration": [r"Non-blacklisting", r"Debarment Declaration", r"Affidavit", r"not debarred", r"not blacklisted"],
+        "Startup India Certificate": [r"DIPP Recognition", r"Startup India", r"DIPP[0-9]{5}", r"Department for Promotion of Industry"],
+        "NSIC Certificate": [r"NSIC Registration", r"NSIC/GP", r"Single Point Registration", r"National Small Industries"]
     }
 
     @classmethod
@@ -31,6 +33,10 @@ class OCRAndExtractionService:
             return {"type": "Make in India Declaration", "confidence": 0.960}
         elif "DEBAR" in file_upper or "DECLARATION" in file_upper:
             return {"type": "Debarment Declaration", "confidence": 0.955}
+        elif "STARTUP" in file_upper or "DIPP" in file_upper:
+            return {"type": "Startup India Certificate", "confidence": 0.980}
+        elif "NSIC" in file_upper:
+            return {"type": "NSIC Certificate", "confidence": 0.975}
 
         # Check regex rules on text content
         scores = {}
@@ -151,8 +157,20 @@ class OCRAndExtractionService:
 
         # Generic fallback if no specific preset matched
         if not entities:
-            entities = [
-                {"entity_key": "document_title", "entity_value": doc_type, "confidence": 0.95, "page_number": 1, "bbox_json": json.dumps({"x": 100, "y": 100, "w": 300, "h": 30})}
-            ]
+            if doc_type == "Startup India Certificate":
+                entities = [
+                    {"entity_key": "dipp_number", "entity_value": "DIPP99281", "confidence": 0.985, "page_number": 1, "bbox_json": json.dumps({"x": 100, "y": 120, "w": 250, "h": 35})},
+                    {"entity_key": "recognition_status", "entity_value": "RECOGNIZED", "confidence": 0.990, "page_number": 1, "bbox_json": json.dumps({"x": 100, "y": 170, "w": 180, "h": 30})}
+                ]
+            elif doc_type == "NSIC Certificate":
+                entities = [
+                    {"entity_key": "nsic_certificate_no", "entity_value": "NSIC/GP/MUM/2024/0091823", "confidence": 0.980, "page_number": 1, "bbox_json": json.dumps({"x": 110, "y": 130, "w": 300, "h": 35})},
+                    {"entity_key": "valid_till", "entity_value": "2028-12-31", "confidence": 0.975, "page_number": 1, "bbox_json": json.dumps({"x": 110, "y": 180, "w": 150, "h": 30})},
+                    {"entity_key": "monetary_limit", "entity_value": "INR 50 Lakhs", "confidence": 0.970, "page_number": 1, "bbox_json": json.dumps({"x": 110, "y": 220, "w": 180, "h": 30})}
+                ]
+            else:
+                entities = [
+                    {"entity_key": "document_title", "entity_value": doc_type, "confidence": 0.95, "page_number": 1, "bbox_json": json.dumps({"x": 100, "y": 100, "w": 300, "h": 30})}
+                ]
 
         return entities

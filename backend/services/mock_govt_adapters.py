@@ -577,6 +577,140 @@ class IncomeTaxAdapter(BaseVerificationAdapter):
             "is_simulated": True
         }
 
+class StartupIndiaVerificationAdapter(BaseVerificationAdapter):
+    source_name = "Startup India"
+
+    STARTUP_DATABASE = {
+        "ABCDE1234F": {
+            "dipp_number": "DIPP99281",
+            "recognition_status": "RECOGNIZED",
+            "sectors": ["Manufacturing", "Safety Solutions"],
+            "incorporation_date": "2015-03-10",
+        },
+        "SOLAR1234S": {
+            "dipp_number": "DIPP88172",
+            "recognition_status": "RECOGNIZED",
+            "sectors": ["Renewable Energy", "Solar Infrastructure"],
+            "incorporation_date": "2017-06-18",
+        }
+    }
+
+    def query(self, identifier: str, bidder_name: str = None) -> Dict[str, Any]:
+        key = identifier or bidder_name
+        record = self.STARTUP_DATABASE.get(key)
+        if record:
+            return {
+                "source": "Startup India",
+                "query": key,
+                "status": "VERIFIED",
+                "dipp_number": record["dipp_number"],
+                "recognition_status": record["recognition_status"],
+                "sectors": record["sectors"],
+                "verified_at": datetime.now(timezone.utc).isoformat(),
+                "reference_id": f"MOCK-DPIIT-{record['dipp_number']}",
+                "is_simulated": True
+            }
+        return {
+            "source": "Startup India",
+            "query": key,
+            "status": "FAILED",
+            "error": "No active DPIIT recognition found for this PAN/Entity",
+            "verified_at": datetime.now(timezone.utc).isoformat(),
+            "reference_id": "MOCK-DPIIT-NOTFOUND",
+            "is_simulated": True
+        }
+
+class NSICVerificationAdapter(BaseVerificationAdapter):
+    source_name = "NSIC"
+
+    NSIC_DATABASE = {
+        "ABCDE1234F": {
+            "nsic_certificate_no": "NSIC/GP/MUM/2024/0091823",
+            "category": "Micro",
+            "valid_till": "2028-12-31",
+            "monetary_limit": "INR 50 Lakhs",
+        }
+    }
+
+    def query(self, identifier: str, bidder_name: str = None) -> Dict[str, Any]:
+        key = identifier or bidder_name
+        record = self.NSIC_DATABASE.get(key)
+        if record:
+            return {
+                "source": "NSIC",
+                "query": key,
+                "status": "VERIFIED",
+                "nsic_certificate_no": record["nsic_certificate_no"],
+                "category": record["category"],
+                "valid_till": record["valid_till"],
+                "monetary_limit": record["monetary_limit"],
+                "verified_at": datetime.now(timezone.utc).isoformat(),
+                "reference_id": f"MOCK-NSIC-{record['nsic_certificate_no'][-6:]}",
+                "is_simulated": True
+            }
+        return {
+            "source": "NSIC",
+            "query": key,
+            "status": "FAILED",
+            "error": "No active NSIC GP Registration found for this PAN/Entity",
+            "verified_at": datetime.now(timezone.utc).isoformat(),
+            "reference_id": "MOCK-NSIC-NOTFOUND",
+            "is_simulated": True
+        }
+
+class EPFOVerificationAdapter(BaseVerificationAdapter):
+    source_name = "EPFO"
+
+    EPFO_DATABASE = {
+        "ABCDE1234F": {
+            "compliance_flag": "COMPLIANT",
+            "epfo_id": "MH/BAN/0012345/000",
+            "active_members_count": 142,
+            "dues_pending": "NIL",
+        },
+        "NOVAS9876K": {
+            "compliance_flag": "COMPLIANT",
+            "epfo_id": "KA/BLR/0098765/000",
+            "active_members_count": 58,
+            "dues_pending": "NIL",
+        },
+        "PRIME5432M": {
+            "compliance_flag": "NON_COMPLIANT",
+            "epfo_id": "MH/PUN/0054321/000",
+            "active_members_count": 18,
+            "dues_pending": "INR 4,20,000",
+        }
+    }
+
+    def query(self, identifier: str, bidder_name: str = None) -> Dict[str, Any]:
+        key = identifier or bidder_name
+        record = self.EPFO_DATABASE.get(key)
+        if record:
+            return {
+                "source": "EPFO",
+                "query": key,
+                "status": "VERIFIED",
+                "compliance_flag": record["compliance_flag"],
+                "epfo_id": record["epfo_id"],
+                "active_members_count": record["active_members_count"],
+                "dues_pending": record["dues_pending"],
+                "verified_at": datetime.now(timezone.utc).isoformat(),
+                "reference_id": f"MOCK-EPFO-{record['epfo_id'][-5:]}",
+                "is_simulated": True
+            }
+        return {
+            "source": "EPFO",
+            "query": key,
+            "status": "VERIFIED",
+            "compliance_flag": "COMPLIANT",
+            "epfo_id": "DL/CPM/0099999/000",
+            "active_members_count": 12,
+            "dues_pending": "NIL",
+            "verified_at": datetime.now(timezone.utc).isoformat(),
+            "reference_id": "MOCK-EPFO-DEFAULT",
+            "is_simulated": True
+        }
+
 # Factory class for verification providers
 class GovernmentVerificationFactory:
     adapters = {
@@ -586,7 +720,10 @@ class GovernmentVerificationFactory:
         "Debarment DB": DebarmentAdapter(),
         "OEM Registry": OEMVerificationAdapter(),
         "MCA": MCAAdapter(),
-        "Income Tax": IncomeTaxAdapter()
+        "Income Tax": IncomeTaxAdapter(),
+        "Startup India": StartupIndiaVerificationAdapter(),
+        "NSIC": NSICVerificationAdapter(),
+        "EPFO": EPFOVerificationAdapter()
     }
 
     @classmethod

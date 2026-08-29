@@ -181,12 +181,12 @@ def run_full_verification_pipeline(id: str, db: Session = Depends(get_db)):
 
     # Query Mock Government Adapters
     verification_records = {}
-    sources_to_query = ["GST", "PAN", "Udyam", "Debarment DB", "OEM Registry", "Income Tax", "MCA"]
+    sources_to_query = ["GST", "PAN", "Udyam", "Debarment DB", "OEM Registry", "Income Tax", "MCA", "Startup India", "NSIC", "EPFO"]
     db.query(VerificationRecord).filter(VerificationRecord.bidder_id == b.id).delete()
     for src in sources_to_query:
         adapter = GovernmentVerificationFactory.get_adapter(src)
         query_key = b.gstin if src == "GST" else (
-            b.pan if src in ("PAN", "EPFO") else (
+            b.pan if src in ("PAN", "EPFO", "Startup India", "NSIC") else (
                 b.udyam_id if src == "Udyam" else b.company_name
             )
         )
