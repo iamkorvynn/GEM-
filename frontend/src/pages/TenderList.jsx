@@ -290,11 +290,9 @@ export default function TenderList({ onSelectTender, showToast }) {
               <div
                 key={t.id}
                 id={`tender-card-${t.id}`}
-                className="card p-5 cursor-pointer animate-fade-up transition-all"
+                className="card card-hover p-5 cursor-pointer animate-fade-up"
                 style={{ borderLeft: `4px solid ${st.dot}` }}
                 onClick={() => onSelectTender(t.id, t.title)}
-                onMouseEnter={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.10)'}
-                onMouseLeave={e => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)'}
               >
                 {/* Header row */}
                 <div className="flex items-start justify-between gap-2 mb-2">
