@@ -114,6 +114,18 @@ def _seed_tender_1(db: Session):
                 description="Valid ISO 9001 QMS certificate.", is_mandatory=True,
                 evidence_type="Technical Certificate", verification_source="Document",
                 rule_type="VALID_DATE", clause_reference="Clause 8.4"),
+            Requirement(id="REQ-STARTUP-001", tender_id=tender_id, title="Startup India Recognition Certificate",
+                description="Required only if Startup benefit is claimed.", is_mandatory=False,
+                evidence_type="Startup India Certificate", verification_source="Startup India", rule_type="VALID",
+                clause_reference="Clause 4.3"),
+            Requirement(id="REQ-NSIC-001", tender_id=tender_id, title="NSIC Registration Certificate",
+                description="Optional NSIC certificate for registration exemption.", is_mandatory=False,
+                evidence_type="NSIC Certificate", verification_source="NSIC", rule_type="VALID",
+                clause_reference="Clause 4.4"),
+            Requirement(id="REQ-EPFO-001", tender_id=tender_id, title="EPFO/ESIC Compliance",
+                description="Valid EPFO compliance clearance.", is_mandatory=True,
+                evidence_type="EPFO Compliance", verification_source="EPFO", rule_type="VALID",
+                clause_reference="Clause 4.5"),
         ]
         db.add_all(reqs)
         db.commit()
@@ -125,7 +137,7 @@ def _seed_tender_1(db: Session):
             "company_name": "ABC Industrial Solutions Pvt. Ltd.",
             "gstin": "27ABCDE1234F1Z5", "pan": "ABCDE1234F",
             "udyam_id": "UDYAM-MH-01-0012345", "company_type": "Pvt Ltd",
-            "incorporation_date": "2015-03-10", "claims_msme": True,
+            "incorporation_date": "2015-03-10", "claims_msme": True, "claims_startup": True,
             "local_content_pct": 65.0, "compliance_score": 98.0, "risk_level": "LOW",
             "verification_progress": 100.0, "overall_status": "VERIFIED"
         },
@@ -654,7 +666,29 @@ def _seed_bidder1(db: Session, b: Bidder):
         extracted_fields=json.dumps({"issuing_entity": "Suraksha Global Safety Corp", "authorized_entity": "ABC Industrial Solutions Pvt. Ltd.", "product_category": "Safety Equipment", "issue_date": "2023-05-10", "expiry_date": "2027-12-31", "signature_present": True}),
         confirmed_fields=json.dumps({"issuing_entity": "Suraksha Global Safety Corp", "authorized_entity": "ABC Industrial Solutions Pvt. Ltd.", "product_category": "Safety Equipment", "issue_date": "2023-05-10", "expiry_date": "2027-12-31", "signature_present": True}),
         confirmed_by="procurement.officer@demo.gov.in", confirmed_at=datetime.now(timezone.utc))
-    db.add_all([d1, d2])
+    d3 = Document(id="DOC-A-STARTUP", bidder_id=b.id, file_name="DIPP_Startup_India_Certificate.pdf",
+        file_path="/mock_docs/DIPP_Startup_India_Certificate.pdf", file_size=650000,
+        classified_type="Startup India Certificate", doc_type="Startup India Certificate",
+        classification_confidence=0.98, status="CONFIRMED",
+        extracted_fields=json.dumps({"dipp_number": "DIPP99281", "recognition_status": "RECOGNIZED"}),
+        confirmed_fields=json.dumps({"dipp_number": "DIPP99281", "recognition_status": "RECOGNIZED"}),
+        confirmed_by="procurement.officer@demo.gov.in", confirmed_at=datetime.now(timezone.utc))
+    d4 = Document(id="DOC-A-NSIC", bidder_id=b.id, file_name="NSIC_GP_Registration_Certificate.pdf",
+        file_path="/mock_docs/NSIC_GP_Registration_Certificate.pdf", file_size=720000,
+        classified_type="NSIC Certificate", doc_type="NSIC Certificate",
+        classification_confidence=0.97, status="CONFIRMED",
+        extracted_fields=json.dumps({"nsic_certificate_no": "NSIC/GP/MUM/2024/0091823", "valid_till": "2028-12-31", "monetary_limit": "INR 50 Lakhs"}),
+        confirmed_fields=json.dumps({"nsic_certificate_no": "NSIC/GP/MUM/2024/0091823", "valid_till": "2028-12-31", "monetary_limit": "INR 50 Lakhs"}),
+        confirmed_by="procurement.officer@demo.gov.in", confirmed_at=datetime.now(timezone.utc))
+    d5 = Document(id="DOC-A-EPFO", bidder_id=b.id, file_name="EPFO_Challan_Receipt_AY_2026.pdf",
+        file_path="/mock_docs/EPFO_Challan_Receipt_AY_2026.pdf", file_size=580000,
+        classified_type="EPFO Compliance", doc_type="EPFO Compliance",
+        classification_confidence=0.96, status="CONFIRMED",
+        extracted_fields=json.dumps({"epfo_id": "MH/BAN/0012345/000", "compliance_flag": "COMPLIANT"}),
+        confirmed_fields=json.dumps({"epfo_id": "MH/BAN/0012345/000", "compliance_flag": "COMPLIANT"}),
+        confirmed_by="procurement.officer@demo.gov.in", confirmed_at=datetime.now(timezone.utc))
+
+    db.add_all([d1, d2, d3, d4, d5])
     db.commit()
 
     db.add_all([
@@ -663,6 +697,9 @@ def _seed_bidder1(db: Session, b: Bidder):
         ExtractedEntity(document_id=d2.id, entity_key="oem_name", entity_value="Suraksha Global Safety Corp", confidence=0.98, page_number=1),
         ExtractedEntity(document_id=d2.id, entity_key="issue_date", entity_value="2023-05-10", confidence=0.98, page_number=1),
         ExtractedEntity(document_id=d2.id, entity_key="expiry_date", entity_value="2027-12-31", confidence=0.98, page_number=1),
+        ExtractedEntity(document_id=d3.id, entity_key="dipp_number", entity_value="DIPP99281", confidence=0.98, page_number=1),
+        ExtractedEntity(document_id=d4.id, entity_key="nsic_certificate_no", entity_value="NSIC/GP/MUM/2024/0091823", confidence=0.98, page_number=1),
+        ExtractedEntity(document_id=d5.id, entity_key="epfo_id", entity_value="MH/BAN/0012345/000", confidence=0.98, page_number=1),
     ])
 
     db.add_all([
@@ -678,6 +715,15 @@ def _seed_bidder1(db: Session, b: Bidder):
         VerificationRecord(id=f"VR-OEM-{b.id}", bidder_id=b.id, source="OEM Registry", query_key=b.company_name, status="VERIFIED",
             submitted_value=b.company_name, government_record_json=json.dumps({"oem_name": "Suraksha Global Safety Corp", "status": "VERIFIED"}),
             reference_id="MOCK-OEM-9912"),
+        VerificationRecord(id=f"VR-STARTUP-{b.id}", bidder_id=b.id, source="Startup India", query_key=b.pan, status="VERIFIED",
+            submitted_value=b.pan, government_record_json=json.dumps({"dipp_number": "DIPP99281", "recognition_status": "RECOGNIZED", "sectors": ["Manufacturing", "Safety Solutions"]}),
+            reference_id="MOCK-DPIIT-99281"),
+        VerificationRecord(id=f"VR-NSIC-{b.id}", bidder_id=b.id, source="NSIC", query_key=b.pan, status="VERIFIED",
+            submitted_value=b.pan, government_record_json=json.dumps({"nsic_certificate_no": "NSIC/GP/MUM/2024/0091823", "category": "Micro", "valid_till": "2028-12-31", "monetary_limit": "INR 50 Lakhs"}),
+            reference_id="MOCK-NSIC-0091823"),
+        VerificationRecord(id=f"VR-EPFO-{b.id}", bidder_id=b.id, source="EPFO", query_key=b.pan, status="VERIFIED",
+            submitted_value=b.pan, government_record_json=json.dumps({"compliance_flag": "COMPLIANT", "epfo_id": "MH/BAN/0012345/000", "active_members_count": 142, "dues_pending": "NIL"}),
+            reference_id="MOCK-EPFO-12345"),
     ])
 
     db.add_all([
@@ -693,6 +739,15 @@ def _seed_bidder1(db: Session, b: Bidder):
         VerificationCheck(id=f"CHK-CR-OEM-{b.id}", bidder_id=b.id, check_type="CORRELATION", module="OEM_DATE_CORRELATION", result="PASS",
             reason="OEM Authorization issue date (2023-05-10) is consistent with company incorporation (2015-03-10)",
             source_fields=json.dumps({"oem_issue_date": "2023-05-10", "incorporation_date": "2015-03-10"})),
+        VerificationCheck(id=f"CHK-EX-STARTUP-{b.id}", bidder_id=b.id, check_type="EXACT", module="STARTUP_INDIA_STATUS", result="PASS",
+            reason="Startup India recognized under DIPP Number DIPP99281 (sectors: Manufacturing, Safety Solutions)",
+            source_fields=json.dumps({"claims_startup": True, "dipp_number": "DIPP99281", "status": "RECOGNIZED"})),
+        VerificationCheck(id=f"CHK-EX-NSIC-{b.id}", bidder_id=b.id, check_type="EXACT", module="NSIC_REGISTRATION", result="PASS",
+            reason="NSIC GP Registration active (Cert No: NSIC/GP/MUM/2024/0091823, limit: INR 50 Lakhs)",
+            source_fields=json.dumps({"nsic_registered": True, "cert_no": "NSIC/GP/MUM/2024/0091823", "limit": "INR 50 Lakhs"})),
+        VerificationCheck(id=f"CHK-EX-EPFO-{b.id}", bidder_id=b.id, check_type="EXACT", module="EPFO_COMPLIANCE", result="PASS",
+            reason="EPFO/ESIC compliance verified — no adverse flag",
+            source_fields=json.dumps({"compliance_flag": "COMPLIANT"})),
     ])
 
     db.add_all([
@@ -708,6 +763,18 @@ def _seed_bidder1(db: Session, b: Bidder):
             status="VERIFIED", extracted_value="Not Debarred", verified_value="Clean",
             verification_source="Debarment DB", confidence=0.99, evidence_doc_id=None, evidence_file_name=None,
             rule_explanation="No match in debarment watchlist."),
+        ComplianceRuleResult(bidder_id=b.id, requirement_id="REQ-STARTUP-001", requirement_title="Startup India Recognition Certificate",
+            status="VERIFIED", extracted_value="DIPP99281", verified_value="RECOGNIZED",
+            verification_source="Startup India", confidence=0.98, evidence_doc_id=d3.id, evidence_file_name=d3.file_name,
+            rule_explanation="Active DPIIT recognition certificate present on central registry."),
+        ComplianceRuleResult(bidder_id=b.id, requirement_id="REQ-NSIC-001", requirement_title="NSIC Registration Certificate",
+            status="VERIFIED", extracted_value="NSIC/GP/MUM/2024/0091823", verified_value="VERIFIED",
+            verification_source="NSIC", confidence=0.97, evidence_doc_id=d4.id, evidence_file_name=d4.file_name,
+            rule_explanation="Active NSIC registration matches legal entity details."),
+        ComplianceRuleResult(bidder_id=b.id, requirement_id="REQ-EPFO-001", requirement_title="EPFO/ESIC Compliance",
+            status="VERIFIED", extracted_value="MH/BAN/0012345/000", verified_value="COMPLIANT",
+            verification_source="EPFO", confidence=0.96, evidence_doc_id=d5.id, evidence_file_name=d5.file_name,
+            rule_explanation="EPFO clearance check returned green compliance flag status."),
     ])
 
     db.add(AIFinding(bidder_id=b.id, title="Verified: Full Eligibility Compliant",
