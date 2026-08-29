@@ -195,9 +195,29 @@ export default function TenderList({ onSelectTender, showToast }) {
 
             <div className="md:col-span-2 flex items-center justify-between pt-2"
               style={{ borderTop: '1px solid #e5e7eb' }}>
-              <p className="text-[10px]" style={{ color: '#9ca3af' }}>
-                A GeM reference ID will be auto-generated (e.g. GEM/2026/B/XXXXXX)
-              </p>
+              <button
+                type="button"
+                onClick={() => setForm({
+                  title: 'Supply and Installation of Electric Vehicle (EV) Charging Stations',
+                  department: 'Ministry of Heavy Industries',
+                  description: 'Procurement of 50kW DC fast chargers and associated electrical panels for installation across national PSU parking hubs.',
+                  deadline: '2026-11-20',
+                  estimated_cost: 'INR 3.20 Crores'
+                })}
+                style={{
+                  background: '#f8fafc',
+                  border: '1px solid #cbd5e1',
+                  color: '#475569',
+                  borderRadius: '10px',
+                  padding: '8px 12px',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                }}
+                className="hover:bg-slate-100"
+              >
+                🪄 Autofill Mock Tender
+              </button>
               <button
                 type="submit" disabled={submitting}
                 className="btn-primary px-6 py-2.5 rounded-xl text-xs flex items-center gap-2"

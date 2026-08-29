@@ -279,9 +279,30 @@ export default function TenderBidderList({
 
             <div className="md:col-span-2 flex items-center justify-between pt-2"
               style={{ borderTop: '1px solid #e5e7eb' }}>
-              <p className="text-[10px]" style={{ color: '#9ca3af' }}>
-                Documents can be uploaded from within the Bidder Profile after import.
-              </p>
+              <button
+                type="button"
+                onClick={() => setForm({
+                  company_name: 'Apex Shield Safety Systems Pvt. Ltd.',
+                  pan: 'APEXS9988D',
+                  gstin: '27APEXS9988D1Z8',
+                  company_type: 'Pvt Ltd',
+                  claims_msme: true,
+                  local_content_pct: 68
+                })}
+                style={{
+                  background: '#f8fafc',
+                  border: '1px solid #cbd5e1',
+                  color: '#475569',
+                  borderRadius: '10px',
+                  padding: '8px 12px',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                }}
+                className="hover:bg-slate-100"
+              >
+                🪄 Autofill Mock Bidder
+              </button>
               <button
                 type="submit" disabled={submitting}
                 className="btn-primary px-6 py-2.5 rounded-xl text-xs flex items-center gap-2"
