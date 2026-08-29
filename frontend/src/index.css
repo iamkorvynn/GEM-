@@ -496,6 +496,12 @@
 .animate-fade-up { animation: fadeUp 0.35s ease forwards; }
 .animate-float { animation: float 4s ease-in-out infinite; }
 
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(1.3); }
+}
+
+
 /* Skeleton shimmer — light */
 .skeleton {
   background: linear-gradient(90deg, #f1f3f5 25%, #e8eaed 50%, #f1f3f5 75%);
