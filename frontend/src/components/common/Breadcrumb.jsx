@@ -20,8 +20,8 @@ export default function Breadcrumb({ nav, go }) {
       <div
         className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black text-white"
         style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)' }}
-      >G</div>
-      <span className="text-sm font-bold" style={{ color: '#374151' }}>GeM Compliance</span>
+      >B</div>
+      <span className="text-sm font-bold" style={{ color: '#374151' }}>BidSatark</span>
       <span className="text-xs" style={{ color: '#d1d5db' }}>/</span>
       <span className="text-xs" style={{ color: '#9ca3af' }}>Dashboard</span>
     </div>
@@ -67,7 +67,7 @@ export default function Breadcrumb({ nav, go }) {
           className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black text-white"
           style={{ background: 'linear-gradient(135deg,#6366f1,#4f46e5)' }}
         >A</div>
-        <span className="text-sm font-bold" style={{ color: '#374151' }}>GeM Compliance</span>
+        <span className="text-sm font-bold" style={{ color: '#374151' }}>BidSatark</span>
         <span className="text-xs" style={{ color: '#d1d5db' }}>/</span>
         <span className="text-xs font-semibold" style={{ color: '#6366f1' }}>Audit Trail</span>
       </div>
@@ -81,7 +81,7 @@ export default function Breadcrumb({ nav, go }) {
           className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black text-white"
           style={{ background: 'linear-gradient(135deg,#ef4444,#dc2626)' }}
         >R</div>
-        <span className="text-sm font-bold" style={{ color: '#374151' }}>GeM Compliance</span>
+        <span className="text-sm font-bold" style={{ color: '#374151' }}>BidSatark</span>
         <span className="text-xs" style={{ color: '#d1d5db' }}>/</span>
         <span className="text-xs font-semibold" style={{ color: '#ef4444' }}>Risk Analytics</span>
       </div>

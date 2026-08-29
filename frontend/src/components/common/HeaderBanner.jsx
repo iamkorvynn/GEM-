@@ -22,7 +22,7 @@ export default function HeaderBanner() {
           <AlertTriangle className="w-2.5 h-2.5" /> Prototype
         </span>
         <span className="font-semibold text-amber-900 truncate text-[11px]">
-          GeM Compliance Platform · AI-powered 3-track bid verification
+          BidSatark Platform · AI-powered 3-track bid verification
         </span>
         <span className="hidden lg:flex items-center gap-1 shrink-0 text-green-700 text-[10px] font-medium">
           <ShieldCheck className="w-3 h-3" /> Simulated adapters active

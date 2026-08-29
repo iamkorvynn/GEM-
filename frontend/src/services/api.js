@@ -1,5 +1,5 @@
 /**
- * api.js — GeM Compliance Platform · Frontend API Client
+ * api.js — BidSatark Platform · Frontend API Client
  *
  * All endpoints are officer-facing. Officer identity comes from the GeM SSO
  * session (simulated via sessionStorage in the prototype). There is no bidder
