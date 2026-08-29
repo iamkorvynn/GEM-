@@ -449,10 +449,20 @@ def record_officer_decision(id: str, req: OfficerDecisionCreate, db: Session = D
 @router.get("/dashboard", response_model=DashboardStats)
 def get_dashboard_stats(db: Session = Depends(get_db)):
     tenders_count = db.query(Tender).filter(Tender.status == "ACTIVE").count()
-    bidders_count = db.query(Bidder).count()
-    verified_bidders = db.query(Bidder).filter(Bidder.overall_status.in_(["VERIFIED", "QUALIFIED"])).count()
-    pending_reviews = db.query(Bidder).filter(Bidder.overall_status == "REVIEW_REQUIRED").count()
-    high_risk_bidders = db.query(Bidder).filter(Bidder.risk_level.in_(["HIGH", "CRITICAL"])).count()
+    bidders = db.query(Bidder).all()
+    bidders_count = len(bidders)
+    verified_bidders = sum(1 for b in bidders if b.overall_status in ("VERIFIED", "QUALIFIED"))
+    pending_reviews = sum(1 for b in bidders if b.overall_status == "REVIEW_REQUIRED")
+    high_risk_bidders = sum(1 for b in bidders if b.risk_level in ("HIGH", "CRITICAL"))
+
+    low_risk = sum(1 for b in bidders if b.risk_level == "LOW")
+    med_risk = sum(1 for b in bidders if b.risk_level == "MEDIUM")
+    high_risk = sum(1 for b in bidders if b.risk_level == "HIGH")
+    crit_risk = sum(1 for b in bidders if b.risk_level == "CRITICAL")
+
+    score_90_100 = sum(1 for b in bidders if (b.compliance_score or 0) >= 90)
+    score_70_89 = sum(1 for b in bidders if 70 <= (b.compliance_score or 0) < 90)
+    score_below_70 = sum(1 for b in bidders if (b.compliance_score or 0) < 70)
 
     events = db.query(AuditEvent).order_by(AuditEvent.timestamp.desc()).limit(8).all()
     event_schemas = [
@@ -463,15 +473,26 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
         ) for e in events
     ]
 
+    avg_progress = (sum(b.verification_progress or 0 for b in bidders) / bidders_count) if bidders_count else 88.5
+
     return DashboardStats(
         active_tenders=tenders_count or 1,
         total_bidders=bidders_count or 5,
         verified_bidders=verified_bidders or 1,
         pending_reviews=pending_reviews or 3,
         high_risk_bidders=high_risk_bidders or 2,
-        compliance_distribution={"Verified (90-100)": 1, "Review Required (70-89)": 2, "Non-Compliant (<70)": 2},
-        risk_distribution={"Low Risk": 1, "Medium Risk": 2, "High Risk": 1, "Critical Risk": 1},
-        verification_progress_pct=88.5,
+        compliance_distribution={
+            "Verified (90-100)": score_90_100,
+            "Review Required (70-89)": score_70_89,
+            "Non-Compliant (<70)": score_below_70,
+        },
+        risk_distribution={
+            "Low Risk": low_risk,
+            "Medium Risk": med_risk,
+            "High Risk": high_risk,
+            "Critical Risk": crit_risk,
+        },
+        verification_progress_pct=round(avg_progress, 1),
         recent_activity=event_schemas
     )
 

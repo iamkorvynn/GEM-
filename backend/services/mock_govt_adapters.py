@@ -33,6 +33,16 @@ class GSTVerificationAdapter(BaseVerificationAdapter):
             "address": "Building 5, Tech Park, Whitefield, Bengaluru, Karnataka 560066",
             "filing_status_gstr3b": "UP_TO_DATE"
         },
+        "07ALPHX1122A1ZP": {
+            "gstin": "07ALPHX1122A1ZP",
+            "legal_name": "Alpha Tech Enterprises",
+            "trade_name": "Alpha Tech",
+            "registration_status": "ACTIVE",
+            "taxpayer_type": "Regular",
+            "registration_date": "2020-09-15",
+            "address": "Block C, Connaught Place, New Delhi 110001",
+            "filing_status_gstr3b": "UP_TO_DATE"
+        },
         "27PRIME5432M1Z2": {
             "gstin": "27PRIME5432M1Z2",
             "legal_name": "Prime Industrial Technologies Enterprise", # Mismatch: Submitted 'Prime Industrial Technologies'
@@ -41,6 +51,78 @@ class GSTVerificationAdapter(BaseVerificationAdapter):
             "taxpayer_type": "Regular",
             "registration_date": "2021-01-10",
             "address": "Sector 18, Electronic City, Gurgaon, Haryana 122015",
+            "filing_status_gstr3b": "DEFECTIVE_FILING"
+        },
+        "07RADNT6789R1ZA": {
+            "gstin": "07RADNT6789R1ZA",
+            "legal_name": "Radiant Procurement Solutions Pvt. Ltd.",
+            "trade_name": "Radiant Procurement",
+            "registration_status": "ACTIVE",
+            "taxpayer_type": "Regular",
+            "registration_date": "2022-06-01",
+            "address": "Industrial Area, Okhla Phase III, New Delhi 110020",
+            "filing_status_gstr3b": "UP_TO_DATE"
+        },
+        # --- Tender 2 (Medical Equipment) ---
+        "27MEDTC1234A1Z5": {
+            "gstin": "27MEDTC1234A1Z5",
+            "legal_name": "MedTech Precision Diagnostics Ltd.",
+            "trade_name": "MedTech Precision",
+            "registration_status": "ACTIVE",
+            "taxpayer_type": "Regular",
+            "registration_date": "2016-04-10",
+            "address": "Bio-Tech Park, Kanjurmarg West, Mumbai, Maharashtra 400078",
+            "filing_status_gstr3b": "UP_TO_DATE"
+        },
+        "29APEXH5678B1Z2": {
+            "gstin": "29APEXH5678B1Z2",
+            "legal_name": "Apex Healthcare Instruments Pvt. Ltd.",
+            "trade_name": "Apex Healthcare",
+            "registration_status": "ACTIVE",
+            "taxpayer_type": "Regular",
+            "registration_date": "2018-08-22",
+            "address": "Bannerghatta Main Road, Bengaluru, Karnataka 560076",
+            "filing_status_gstr3b": "UP_TO_DATE"
+        },
+        "07BIOSD9012C1ZX": {
+            "gstin": "07BIOSD9012C1ZX",
+            "legal_name": "BioShield Diagnostics Solutions",
+            "trade_name": "BioShield Med",
+            "registration_status": "CANCELLED_PROVISIONAL",
+            "taxpayer_type": "Regular",
+            "registration_date": "2022-02-14",
+            "address": "Plot 99, Patparganj Industrial Area, New Delhi 110092",
+            "filing_status_gstr3b": "DEFECTIVE_FILING"
+        },
+        # --- Tender 3 (Cloud & Datacenter) ---
+        "07BHRTC3344D1Z6": {
+            "gstin": "07BHRTC3344D1Z6",
+            "legal_name": "Bharat Cloud Infrastructure Ltd.",
+            "trade_name": "Bharat Cloud",
+            "registration_status": "ACTIVE",
+            "taxpayer_type": "Regular",
+            "registration_date": "2015-09-01",
+            "address": "Barakhamba Road, Connaught Place, New Delhi 110001",
+            "filing_status_gstr3b": "UP_TO_DATE"
+        },
+        "27NETCR7788E1Z1": {
+            "gstin": "27NETCR7788E1Z1",
+            "legal_name": "NetCore Cyber Systems Pvt. Ltd.",
+            "trade_name": "NetCore Cyber",
+            "registration_status": "ACTIVE",
+            "taxpayer_type": "Regular",
+            "registration_date": "2018-11-15",
+            "address": "Hinjawadi Phase 2, Pune, Maharashtra 411057",
+            "filing_status_gstr3b": "UP_TO_DATE"
+        },
+        "24HORIZ2233F1Z9": {
+            "gstin": "24HORIZ2233F1Z9",
+            "legal_name": "Horizon Tech Solutions India",
+            "trade_name": "Horizon Tech",
+            "registration_status": "SUSPENDED",
+            "taxpayer_type": "Regular",
+            "registration_date": "2021-05-18",
+            "address": "SG Highway, Prahlad Nagar, Ahmedabad, Gujarat 380015",
             "filing_status_gstr3b": "DEFECTIVE_FILING"
         }
     }
@@ -89,9 +171,67 @@ class PANVerificationAdapter(BaseVerificationAdapter):
             "status": "VALID",
             "aadhaar_seeding": "NOT_APPLICABLE"
         },
+        "ALPHX1122A": {
+            "pan": "ALPHX1122A",
+            "name": "ALPHA TECH ENTERPRISES",
+            "category": "Proprietorship",
+            "status": "VALID",
+            "aadhaar_seeding": "NOT_APPLICABLE"
+        },
         "PRIME5432M": {
             "pan": "PRIME5432M",
             "name": "PRIME INDUSTRIAL TECHNOLOGIES ENTERPRISE",
+            "category": "Company",
+            "status": "VALID",
+            "aadhaar_seeding": "NOT_APPLICABLE"
+        },
+        "RADNT6789R": {
+            "pan": "RADNT6789R",
+            "name": "RADIANT PROCUREMENT SOLUTIONS PVT. LTD.",
+            "category": "Company",
+            "status": "VALID",
+            "aadhaar_seeding": "NOT_APPLICABLE"
+        },
+        # --- Tender 2 ---
+        "MEDTC1234A": {
+            "pan": "MEDTC1234A",
+            "name": "MEDTECH PRECISION DIAGNOSTICS LTD.",
+            "category": "Company",
+            "status": "VALID",
+            "aadhaar_seeding": "NOT_APPLICABLE"
+        },
+        "APEXH5678B": {
+            "pan": "APEXH5678B",
+            "name": "APEX HEALTHCARE INSTRUMENTS PVT. LTD.",
+            "category": "Company",
+            "status": "VALID",
+            "aadhaar_seeding": "NOT_APPLICABLE"
+        },
+        "BIOSD9012C": {
+            "pan": "BIOSD9012C",
+            "name": "BIOSHIELD DIAGNOSTICS SOLUTIONS",
+            "category": "Company",
+            "status": "VALID",
+            "aadhaar_seeding": "NOT_APPLICABLE"
+        },
+        # --- Tender 3 ---
+        "BHRTC3344D": {
+            "pan": "BHRTC3344D",
+            "name": "BHARAT CLOUD INFRASTRUCTURE LTD.",
+            "category": "Company",
+            "status": "VALID",
+            "aadhaar_seeding": "NOT_APPLICABLE"
+        },
+        "NETCR7788E": {
+            "pan": "NETCR7788E",
+            "name": "NETCORE CYBER SYSTEMS PVT. LTD.",
+            "category": "Company",
+            "status": "VALID",
+            "aadhaar_seeding": "NOT_APPLICABLE"
+        },
+        "HORIZ2233F": {
+            "pan": "HORIZ2233F",
+            "name": "HORIZON TECH SOLUTIONS INDIA",
             "category": "Company",
             "status": "VALID",
             "aadhaar_seeding": "NOT_APPLICABLE"
@@ -141,8 +281,39 @@ class UdyamVerificationAdapter(BaseVerificationAdapter):
             "major_activity": "Manufacturing",
             "status": "ACTIVE",
             "nic_code": "32909 - Manufacture of safety equipment"
+        },
+        "UDYAM-MH-02-0089123": {
+            "udyam_number": "UDYAM-MH-02-0089123",
+            "enterprise_name": "MedTech Precision Diagnostics Ltd.",
+            "enterprise_type": "MEDIUM",
+            "major_activity": "Manufacturing",
+            "status": "ACTIVE",
+            "nic_code": "26600 - Manufacture of electromedical and electrotherapeutic apparatus"
+        },
+        "UDYAM-KA-03-0045678": {
+            "udyam_number": "UDYAM-KA-03-0045678",
+            "enterprise_name": "Apex Healthcare Instruments Pvt. Ltd.",
+            "enterprise_type": "SMALL",
+            "major_activity": "Manufacturing",
+            "status": "ACTIVE",
+            "nic_code": "26600 - Manufacture of electromedical apparatus"
+        },
+        "UDYAM-DL-04-0012984": {
+            "udyam_number": "UDYAM-DL-04-0012984",
+            "enterprise_name": "Bharat Cloud Infrastructure Ltd.",
+            "enterprise_type": "MEDIUM",
+            "major_activity": "Services",
+            "status": "ACTIVE",
+            "nic_code": "62020 - Computer consultancy and computer facilities management"
+        },
+        "UDYAM-MH-05-0067890": {
+            "udyam_number": "UDYAM-MH-05-0067890",
+            "enterprise_name": "NetCore Cyber Systems Pvt. Ltd.",
+            "enterprise_type": "SMALL",
+            "major_activity": "Services",
+            "status": "ACTIVE",
+            "nic_code": "62099 - Other information technology service activities"
         }
-        # Bidder C Prime Industrial does NOT have an active Udyam registration
     }
 
     def query(self, identifier: str, bidder_name: str = None) -> Dict[str, Any]:
@@ -182,6 +353,33 @@ class DebarmentAdapter(BaseVerificationAdapter):
             "debarred_from": "2025-05-10",
             "debarred_until": "2028-05-10",
             "severity": "CRITICAL"
+        },
+        {
+            "name": "RADIANT PROCUREMENT SOLUTIONS",
+            "aliases": ["RADIANT PROCUREMENT SOLUTIONS PVT. LTD."],
+            "debarment_reason": "Cartel bidding and collusive submission in MoF Tender GEM/2024/B/8912",
+            "debarred_by": "Ministry of Finance",
+            "debarred_from": "2025-01-15",
+            "debarred_until": "2027-01-15",
+            "severity": "CRITICAL"
+        },
+        {
+            "name": "BIOSHIELD DIAGNOSTICS SOLUTIONS",
+            "aliases": ["BIOSHIELD DIAGNOSTICS", "BIOSHIELD MED"],
+            "debarment_reason": "Submission of forged CDSCO manufacturing license in Central Hospital Tender",
+            "debarred_by": "Ministry of Health & Family Welfare",
+            "debarred_from": "2025-07-20",
+            "debarred_until": "2028-07-20",
+            "severity": "CRITICAL"
+        },
+        {
+            "name": "HORIZON TECH SOLUTIONS INDIA",
+            "aliases": ["HORIZON TECH SOLUTIONS", "HORIZON NETWORKS"],
+            "debarment_reason": "Default on high-availability cloud SLA and security breach penalty",
+            "debarred_by": "Ministry of Electronics & IT",
+            "debarred_from": "2025-08-01",
+            "debarred_until": "2027-08-01",
+            "severity": "HIGH"
         }
     ]
 
@@ -229,8 +427,31 @@ class OEMVerificationAdapter(BaseVerificationAdapter):
             "auth_letter_no": "OEM-ST-2026-4410",
             "valid_until": "2026-10-15", # Nearing expiry
             "status": "VERIFIED"
+        },
+        "MedTech Precision Diagnostics Ltd.": {
+            "oem_name": "Siemens Healthineers Bharat Corp",
+            "auth_letter_no": "OEM-MED-2026-8812",
+            "valid_until": "2028-12-31",
+            "status": "VERIFIED"
+        },
+        "Apex Healthcare Instruments Pvt. Ltd.": {
+            "oem_name": "Philips Healthcare Diagnostic OEM",
+            "auth_letter_no": "OEM-PHL-2026-3391",
+            "valid_until": "2026-11-30",
+            "status": "VERIFIED"
+        },
+        "Bharat Cloud Infrastructure Ltd.": {
+            "oem_name": "Hewlett Packard Enterprise Bharat",
+            "auth_letter_no": "OEM-HPE-2026-7719",
+            "valid_until": "2028-06-30",
+            "status": "VERIFIED"
+        },
+        "NetCore Cyber Systems Pvt. Ltd.": {
+            "oem_name": "Dell Technologies India OEM",
+            "auth_letter_no": "OEM-DEL-2026-5521",
+            "valid_until": "2027-03-31",
+            "status": "VERIFIED"
         }
-        # Prime Industrial Technologies missing OEM Auth
     }
 
     def query(self, identifier: str, bidder_name: str = None) -> Dict[str, Any]:
