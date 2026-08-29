@@ -6,7 +6,7 @@
  * login and no JWT auth header — the backend is open to the officer console.
  */
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 /** Attach the simulated officer identity to audit-sensitive requests. */
 function officerHeaders() {
