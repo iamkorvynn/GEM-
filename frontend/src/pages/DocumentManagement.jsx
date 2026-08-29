@@ -64,6 +64,77 @@ const GEM_PORTAL_DATA = {
       },
     },
   },
+  'GEM/2026/B/891042': {
+    tenderTitle: 'Procurement of Specialized Diagnostic Medical Equipment & Consumables',
+    department: 'Ministry of Health & Family Welfare / Central Procurement Cell',
+    deadline: '15 Oct 2026',
+    bids: {
+      'BID-MED-01': {
+        company: 'MedTech Precision Diagnostics Ltd.',
+        gemBidId: 'GEM/BID/2026/MED/004121',
+        submittedAt: '2026-08-28 14:15 IST',
+        documents: [
+          { id: 'DOC-MED1-GST',   file_name: 'MedTech_GST_Certificate.pdf',          classified_type: 'GST Certificate',           confidence: 0.991, status: 'VERIFIED', size: '320 KB', pages: 2 },
+          { id: 'DOC-MED1-CDSCO', file_name: 'CDSCO_License_MD15_MedTech.pdf',       classified_type: 'CDSCO Regulatory License',  confidence: 0.984, status: 'VERIFIED', size: '540 KB', pages: 3 },
+          { id: 'DOC-MED1-OEM',   file_name: 'Siemens_OEM_Authorization_2026.pdf',   classified_type: 'OEM Authorization Letter',   confidence: 0.978, status: 'VERIFIED', size: '410 KB', pages: 3 },
+        ],
+      },
+      'BID-MED-02': {
+        company: 'Apex Healthcare Instruments Pvt. Ltd.',
+        gemBidId: 'GEM/BID/2026/MED/004122',
+        submittedAt: '2026-08-28 16:30 IST',
+        documents: [
+          { id: 'DOC-MED2-GST', file_name: 'ApexHealthcare_GST.pdf',              classified_type: 'GST Certificate',          confidence: 0.975, status: 'VERIFIED',        size: '298 KB', pages: 2 },
+          { id: 'DOC-MED2-OEM', file_name: 'Philips_OEM_Letter_Apex.pdf',         classified_type: 'OEM Authorization Letter', confidence: 0.952, status: 'REVIEW_REQUIRED', size: '385 KB', pages: 2 },
+          { id: 'DOC-MED2-MII', file_name: 'Apex_Make_in_India_Declaration.pdf',  classified_type: 'Make in India Declaration', confidence: 0.941, status: 'REVIEW_REQUIRED', size: '190 KB', pages: 1 },
+        ],
+      },
+      'BID-MED-03': {
+        company: 'BioShield Diagnostics Solutions',
+        gemBidId: 'GEM/BID/2026/MED/004123',
+        submittedAt: '2026-08-28 18:05 IST',
+        documents: [
+          { id: 'DOC-MED3-GST',   file_name: 'BioShield_GST_Provisional.pdf',           classified_type: 'GST Certificate',          confidence: 0.925, status: 'FAILED', size: '275 KB', pages: 2 },
+          { id: 'DOC-MED3-CDSCO', file_name: 'CDSCO_Expired_Certificate_BioShield.pdf', classified_type: 'CDSCO Regulatory License', confidence: 0.908, status: 'FAILED', size: '360 KB', pages: 2 },
+        ],
+      },
+    },
+  },
+  'GEM/2026/B/952317': {
+    tenderTitle: 'Turnkey Deployment of Secured Campus Cloud & Datacenter Networking',
+    department: 'Ministry of Electronics & IT / NIC Systems Division',
+    deadline: '30 Oct 2026',
+    bids: {
+      'BID-CLOUD-01': {
+        company: 'Bharat Cloud Infrastructure Ltd.',
+        gemBidId: 'GEM/BID/2026/CLD/007191',
+        submittedAt: '2026-08-28 11:20 IST',
+        documents: [
+          { id: 'DOC-CLD1-GST', file_name: 'BharatCloud_GST.pdf',                  classified_type: 'GST Certificate',          confidence: 0.994, status: 'VERIFIED', size: '345 KB', pages: 2 },
+          { id: 'DOC-CLD1-OEM', file_name: 'HPE_Tier1_Server_OEM_Auth.pdf',        classified_type: 'OEM Authorization Letter', confidence: 0.982, status: 'VERIFIED', size: '480 KB', pages: 4 },
+          { id: 'DOC-CLD1-ISO', file_name: 'ISO_27001_Information_Security.pdf',   classified_type: 'Security Certificate',     confidence: 0.976, status: 'VERIFIED', size: '510 KB', pages: 3 },
+        ],
+      },
+      'BID-CLOUD-02': {
+        company: 'NetCore Cyber Systems Pvt. Ltd.',
+        gemBidId: 'GEM/BID/2026/CLD/007192',
+        submittedAt: '2026-08-28 13:45 IST',
+        documents: [
+          { id: 'DOC-CLD2-GST', file_name: 'NetCore_GST_Certificate.pdf',          classified_type: 'GST Certificate',          confidence: 0.968, status: 'REVIEW_REQUIRED', size: '310 KB', pages: 2 },
+          { id: 'DOC-CLD2-OEM', file_name: 'Dell_OEM_Letter_NetCore.pdf',           classified_type: 'OEM Authorization Letter', confidence: 0.959, status: 'VERIFIED',        size: '425 KB', pages: 3 },
+        ],
+      },
+      'BID-CLOUD-03': {
+        company: 'Horizon Tech Solutions India',
+        gemBidId: 'GEM/BID/2026/CLD/007193',
+        submittedAt: '2026-08-28 15:10 IST',
+        documents: [
+          { id: 'DOC-CLD3-GST', file_name: 'Horizon_GST_Defective.pdf',            classified_type: 'GST Certificate',          confidence: 0.921, status: 'FAILED', size: '280 KB', pages: 2 },
+          { id: 'DOC-CLD3-MII', file_name: 'Horizon_Local_Content_Declaration.pdf',classified_type: 'Make in India Declaration', confidence: 0.938, status: 'FAILED', size: '185 KB', pages: 1 },
+        ],
+      },
+    },
+  },
 };
 
 const TENDERS = Object.keys(GEM_PORTAL_DATA);
