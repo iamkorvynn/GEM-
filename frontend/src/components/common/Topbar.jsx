@@ -67,52 +67,43 @@ export default function Topbar({ nav, go, BreadcrumbSlot }) {
           <Bell style={{ width: 16, height: 16, color: '#6b7280' }} />
         </CircleBtn>
 
-        {/* Search */}
+        {/* Search — single unified element */}
         <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
-          <CircleBtn title="Search">
-            <Search style={{ width: 15, height: 15, color: '#6b7280' }} />
-          </CircleBtn>
-
-          {/* expandable search field */}
-          <div style={{
-            overflow: 'hidden',
-            width: searchFocused ? 180 : 0,
-            transition: 'width 0.25s ease',
-            marginLeft: searchFocused ? 8 : 0,
-          }}>
+          {/* Search pill / input toggle */}
+          {searchFocused ? (
             <input
               type="text"
-              placeholder="Search me..."
-              onFocus={() => setSearchFocused(true)}
+              placeholder="Search tenders, bidders…"
+              autoFocus
               onBlur={() => setSearchFocused(false)}
               style={{
-                width: 180, height: 40,
-                border: '1.5px solid #e5e7eb', borderRadius: 999,
+                width: 220, height: 40,
+                border: '1.5px solid #3b82f6', borderRadius: 999,
                 padding: '0 16px', fontSize: 12,
                 color: '#374151', outline: 'none',
-                background: '#f7f8fa',
+                background: '#fff',
                 fontFamily: 'inherit',
+                boxShadow: '0 0 0 3px rgba(59,130,246,0.10)',
               }}
             />
-          </div>
-
-          {/* persistent search pill when not expanded */}
-          {!searchFocused && (
-            <div
+          ) : (
+            <button
               onClick={() => setSearchFocused(true)}
               style={{
-                display: 'flex', alignItems: 'center',
-                gap: 6, padding: '0 14px',
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '0 14px 0 12px',
                 height: 40, borderRadius: 999,
                 border: '1.5px solid #e5e7eb',
                 background: '#f7f8fa',
                 fontSize: 12, color: '#9ca3af',
-                cursor: 'text', marginLeft: 6,
-                minWidth: 110,
+                cursor: 'text',
               }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#d1d5db'; e.currentTarget.style.background = '#fff'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.background = '#f7f8fa'; }}
             >
+              <Search style={{ width: 14, height: 14 }} />
               Search me...
-            </div>
+            </button>
           )}
         </div>
 

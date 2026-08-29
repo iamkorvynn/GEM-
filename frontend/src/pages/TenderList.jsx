@@ -309,7 +309,7 @@ export default function TenderList({ onSelectTender, showToast }) {
                   {[
                     { label: 'Department', value: t.department?.split(' ').slice(-2).join(' ') || t.department },
                     { label: 'Deadline',   value: t.deadline },
-                    { label: 'Bidders',    value: `${t.bidders_count} submitted` },
+                    { label: 'Bidders',    value: `${t.bidder_count ?? t.bidders_count ?? 0} submitted` },
                   ].map((item, i) => (
                     <div key={i} className="card-inner px-2.5 py-2">
                       <div className="text-[9px] font-bold uppercase tracking-wide mb-0.5" style={{ color: '#9ca3af' }}>{item.label}</div>

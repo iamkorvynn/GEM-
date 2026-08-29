@@ -159,7 +159,10 @@ export default function Dashboard({ go, showToast }) {
     <div className="p-6 space-y-5" style={{ background: '#f0f2f5', minHeight: '100%' }}>
 
       {/* ══ ROW 1 — Welcome + Balance Stats + Analytics ══ */}
-      <div className="grid gap-5" style={{ gridTemplateColumns: '1fr 1fr 280px' }}>
+      <div
+        className="grid gap-5"
+        style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}
+      >
 
         {/* Welcome */}
         <Card>
@@ -278,7 +281,10 @@ export default function Dashboard({ go, showToast }) {
       </div>
 
       {/* ══ ROW 2 — Recent Tenders + Expenses/Income style + Quick Bids ══ */}
-      <div className="grid gap-5" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+      <div
+        className="grid gap-5"
+        style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}
+      >
 
         {/* Recent Tenders — "Last Transactions" style */}
         <Card style={{ gridColumn: '1' }}>
@@ -406,11 +412,14 @@ export default function Dashboard({ go, showToast }) {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {ACTIVITY_FEED.map((act, i) => (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '10px 0',
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 8px', borderRadius: 10,
                 borderBottom: i < ACTIVITY_FEED.length - 1 ? '1px solid #f1f5f9' : 'none',
-              }}>
+                cursor: 'default', transition: 'background 0.12s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = '#f7f8fa'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              >
                 <div style={{
                   width: 32, height: 32, borderRadius: '50%',
                   background: act.bg, border: `1.5px solid ${act.border}`,

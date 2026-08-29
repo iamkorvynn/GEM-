@@ -20,7 +20,7 @@ import RiskAnalytics from './pages/RiskAnalytics';
 
 // ── Nav helpers ───────────────────────────────────────────────────────────────
 // nav shape: { page, tenderId, tenderTitle, bidderId, bidderName }
-const DEFAULT_NAV = { page: 'tenders' };
+const DEFAULT_NAV = { page: 'dashboard' };
 
 function AppInner() {
   const { user, loading } = useAuth();
@@ -92,7 +92,7 @@ function AppInner() {
             bidderName={nav.bidderName}
             tenderId={nav.tenderId}
             tenderTitle={nav.tenderTitle}
-            onBack={() => go('bidder-list', { tenderId: nav.tenderId, tenderTitle: nav.tenderTitle })}
+            onBack={() => go('tender-detail', { tenderId: nav.tenderId, tenderTitle: nav.tenderTitle })}
             onRunVerificationTrigger={() => setDrawerOpen(true)}
             showToast={showToast}
           />
@@ -103,7 +103,7 @@ function AppInner() {
           <AwardDecision
             tenderId={nav.tenderId}
             tenderTitle={nav.tenderTitle}
-            onBack={() => go('bidder-list', { tenderId: nav.tenderId, tenderTitle: nav.tenderTitle })}
+            onBack={() => go('tender-detail', { tenderId: nav.tenderId, tenderTitle: nav.tenderTitle })}
             onComplete={() => { go('tenders'); showToast('Tender Completed', `Award recorded for ${nav.tenderTitle || nav.tenderId}`, 'success'); }}
             showToast={showToast}
           />

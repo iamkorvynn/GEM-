@@ -88,7 +88,7 @@ export default function TenderBidderList({
   const verified  = bidders.filter(b => b.risk_level === 'LOW').length;
   const highRisk  = bidders.filter(b => ['HIGH', 'CRITICAL'].includes(b.risk_level)).length;
   const pending   = bidders.filter(b => b.risk_level === 'PENDING' || !b.compliance_score).length;
-  const canAward  = bidders.some(b => b.officer_decision === 'QUALIFIED' || b.risk_level !== 'PENDING');
+  const canAward  = bidders.length > 0 && bidders.some(b => b.officer_decision === 'QUALIFIED' || b.risk_level !== 'PENDING');
   const isCompleted = tender?.status === 'COMPLETED';
 
   return (

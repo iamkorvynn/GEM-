@@ -15,7 +15,17 @@ const ICONS = {
 export default function Breadcrumb({ nav, go }) {
   const segments = [];
 
-  if (nav.page === 'dashboard') return null;
+  if (nav.page === 'dashboard') return (
+    <div className="flex items-center gap-2">
+      <div
+        className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black text-white"
+        style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)' }}
+      >G</div>
+      <span className="text-sm font-bold" style={{ color: '#374151' }}>GeM Compliance</span>
+      <span className="text-xs" style={{ color: '#d1d5db' }}>/</span>
+      <span className="text-xs" style={{ color: '#9ca3af' }}>Dashboard</span>
+    </div>
+  );
 
   // Always start with Tenders
   segments.push({
@@ -52,16 +62,28 @@ export default function Breadcrumb({ nav, go }) {
 
   if (nav.page === 'audit-trail') {
     return (
-      <div className="flex items-center gap-1.5 text-xs" style={{ color: '#9ca3af' }}>
-        <span style={{ color: '#6b7280' }}>Audit Trail</span>
+      <div className="flex items-center gap-2">
+        <div
+          className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black text-white"
+          style={{ background: 'linear-gradient(135deg,#6366f1,#4f46e5)' }}
+        >A</div>
+        <span className="text-sm font-bold" style={{ color: '#374151' }}>GeM Compliance</span>
+        <span className="text-xs" style={{ color: '#d1d5db' }}>/</span>
+        <span className="text-xs font-semibold" style={{ color: '#6366f1' }}>Audit Trail</span>
       </div>
     );
   }
 
   if (nav.page === 'risk-analytics') {
     return (
-      <div className="flex items-center gap-1.5 text-xs" style={{ color: '#9ca3af' }}>
-        <span style={{ color: '#6b7280' }}>Risk Analytics</span>
+      <div className="flex items-center gap-2">
+        <div
+          className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black text-white"
+          style={{ background: 'linear-gradient(135deg,#ef4444,#dc2626)' }}
+        >R</div>
+        <span className="text-sm font-bold" style={{ color: '#374151' }}>GeM Compliance</span>
+        <span className="text-xs" style={{ color: '#d1d5db' }}>/</span>
+        <span className="text-xs font-semibold" style={{ color: '#ef4444' }}>Risk Analytics</span>
       </div>
     );
   }

@@ -110,16 +110,20 @@ export default function Sidebar({ currentTab, setCurrentTab }) {
         overflow: 'visible',
       }}
     >
-      {/* ── Brand logo pill ── */}
-      <div style={{
-        width: 40, height: 40, borderRadius: '50%',
-        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '0 4px 14px rgba(245,158,11,0.45)',
-        fontSize: 16, fontWeight: 900, color: '#fff',
-        cursor: 'default', userSelect: 'none',
-        marginBottom: 4,
-      }}>
+      {/* ── Brand logo ── */}
+      <div
+        title="GeM Compliance Platform"
+        style={{
+          width: 40, height: 40, borderRadius: '50%',
+          background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 4px 14px rgba(245,158,11,0.45)',
+          fontSize: 16, fontWeight: 900, color: '#fff',
+          cursor: 'default', userSelect: 'none',
+          marginBottom: 14,
+          flexShrink: 0,
+        }}
+      >
         G
       </div>
 
