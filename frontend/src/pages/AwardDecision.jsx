@@ -63,7 +63,16 @@ export default function AwardDecision({ tenderId, tenderTitle, onBack, onComplet
           award_notes: notes,
         }),
       });
-      if (!res.ok) throw new Error((await res.json()).detail || 'Award failed');
+      if (!res.ok) {
+        let msg = 'Award failed';
+        try {
+          const errData = await res.json();
+          msg = errData.detail || msg;
+        } catch {
+          msg = `HTTP Error ${res.status}`;
+        }
+        throw new Error(msg);
+      }
       setSaving(false);
       onComplete?.();
     } catch (err) {

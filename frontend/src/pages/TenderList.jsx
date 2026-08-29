@@ -70,7 +70,16 @@ export default function TenderList({ onSelectTender, showToast }) {
           estimated_cost: form.estimated_cost || 'INR 1.0 Crore',
         }),
       });
-      if (!res.ok) throw new Error((await res.json()).detail || 'Failed');
+      if (!res.ok) {
+        let msg = 'Failed';
+        try {
+          const errData = await res.json();
+          msg = errData.detail || msg;
+        } catch {
+          msg = `HTTP Error ${res.status}`;
+        }
+        throw new Error(msg);
+      }
       const created = await res.json();
       setShowForm(false);
       setForm({ title: '', department: DEPT_OPTIONS[0], description: '', deadline: '', estimated_cost: '' });

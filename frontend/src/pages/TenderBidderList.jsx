@@ -72,7 +72,16 @@ export default function TenderBidderList({
           tender_id: tenderId,
         }),
       });
-      if (!res.ok) throw new Error((await res.json()).detail || 'Import failed');
+      if (!res.ok) {
+        let msg = 'Import failed';
+        try {
+          const errData = await res.json();
+          msg = errData.detail || msg;
+        } catch {
+          msg = `HTTP Error ${res.status}`;
+        }
+        throw new Error(msg);
+      }
       const created = await res.json();
       setShowForm(false);
       setForm({ company_name: '', pan: '', gstin: '', udyam_id: '', company_type: 'Pvt Ltd', claims_msme: false, local_content_pct: 0 });
