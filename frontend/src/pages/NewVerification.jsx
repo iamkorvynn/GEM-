@@ -1,223 +1,253 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { Upload, FileText, Plus, CheckCircle2, AlertTriangle, ShieldCheck, X } from 'lucide-react';
+import { uploadDocument } from '../services/api';
 
-export default function NewVerification({ onBidderCreated, showToast }) {
-  const [form, setForm] = useState({
-    company_name: '',
-    pan: '',
-    gstin: '',
-    company_type: 'Pvt Ltd',
-    tender_id: 'GEM/2026/B/784921',
-    claims_msme: false,
-    claims_startup: false,
-    local_content_pct: 0,
-  });
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
+const SAMPLE_TENDERS = [
+  { id: 'TENDER-001', label: 'TENDER-001 — Industrial Safety Equipment (MHI)' },
+  { id: 'TENDER-002', label: 'TENDER-002 — Medical Supply Procurement (MoH)' },
+  { id: 'TENDER-003', label: 'TENDER-003 — IT Infrastructure Services (MEITY)' },
+];
 
-  const validate = () => {
-    const e = {};
-    if (!form.company_name.trim()) e.company_name = 'Company name is required';
-    if (!form.pan.trim()) e.pan = 'PAN is required';
-    if (!form.gstin.trim()) e.gstin = 'GSTIN is required';
-    return e;
+const BIDDER_TEMPLATES = [
+  { id: 'BIDDER-A', label: 'BIDDER-A — ABC Industrial Solutions Pvt. Ltd.', riskHint: 'LOW', color: '#15803d', bg: '#f0fdf4', border: '#bbf7d0' },
+  { id: 'BIDDER-B', label: 'BIDDER-B — Nova Safety Systems Ltd.', riskHint: 'MEDIUM', color: '#92400e', bg: '#fffbeb', border: '#fde68a' },
+  { id: 'BIDDER-C', label: 'BIDDER-C — Alpha Tech Enterprises', riskHint: 'HIGH', color: '#991b1b', bg: '#fef2f2', border: '#fecaca' },
+  { id: 'BIDDER-D', label: 'BIDDER-D — Prime Industrial Technologies', riskHint: 'HIGH', color: '#991b1b', bg: '#fef2f2', border: '#fecaca' },
+  { id: 'BIDDER-E', label: 'BIDDER-E — Radiant Procurement Solutions', riskHint: 'CRITICAL', color: '#9f1239', bg: '#fff1f2', border: '#fda4af' },
+  { id: 'NEW', label: 'New Bidder / Enter Manually', riskHint: 'UNKNOWN', color: '#6b7280', bg: '#f7f8fa', border: '#e5e7eb' },
+];
+
+export default function NewVerification({ setActiveBidderId, setCurrentTab, showToast }) {
+  const [tenderId, setTenderId] = useState('TENDER-001');
+  const [bidderId, setBidderId] = useState('BIDDER-A');
+  const [companyName, setCompanyName] = useState('');
+  const [pan, setPan] = useState('');
+  const [gstin, setGstin] = useState('');
+  const [files, setFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadResults, setUploadResults] = useState([]);
+  const [uploadComplete, setUploadComplete] = useState(false);
+  const dropRef = useRef(null);
+
+  const handleFileDrop = e => {
+    e.preventDefault();
+    const dropped = Array.from(e.dataTransfer?.files || e.target.files || []);
+    const pdfs = dropped.filter(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
+    setFiles(prev => [...prev, ...pdfs.filter(f => !prev.find(p => p.name === f.name))]);
   };
 
-  const handleSubmit = async (ev) => {
-    ev.preventDefault();
-    const e = validate();
-    if (Object.keys(e).length) { setErrors(e); return; }
-    setLoading(true);
-    try {
-      const res = await fetch('http://127.0.0.1:8000/api/bidders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, local_content_pct: parseFloat(form.local_content_pct) || 0 }),
-      });
-      if (!res.ok) { const err = await res.json(); throw new Error(err.detail || 'Failed'); }
-      const bidder = await res.json();
-      showToast('Bid Added', `${bidder.company_name} added to review queue. Registry pre-fetch complete.`, 'success');
-      onBidderCreated(bidder.id);
-    } catch (err) { showToast('Error', err.message, 'error'); }
-    finally { setLoading(false); }
+  const removeFile = name => setFiles(prev => prev.filter(f => f.name !== name));
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+    if (files.length === 0) { showToast?.('No Files', 'Please attach at least one PDF document.', 'warning'); return; }
+    const finalBidderId = bidderId === 'NEW' ? `BID-NEW-${Date.now()}` : bidderId;
+    setUploading(true);
+    const results = [];
+    for (const file of files) {
+      try {
+        const res = await uploadDocument(finalBidderId, file);
+        results.push({ file: file.name, status: 'success', msg: res.classified_type || 'Classified' });
+      } catch (err) {
+        results.push({ file: file.name, status: 'error', msg: err.message });
+      }
+    }
+    setUploadResults(results);
+    setUploading(false);
+    setUploadComplete(true);
+    const successCount = results.filter(r => r.status === 'success').length;
+    if (successCount > 0) {
+      showToast?.('Upload Complete', `${successCount} document(s) uploaded and classified by AI.`, 'success');
+    }
   };
 
-  const Field = ({ field, label, placeholder, type = 'text' }) => (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</label>
-      <input
-        id={`nv-${field}`}
-        type={type}
-        value={form[field]}
-        placeholder={placeholder}
-        onChange={e => { setForm(f => ({ ...f, [field]: e.target.value })); setErrors(er => ({ ...er, [field]: undefined })); }}
-        className="glass-input px-4 py-2.5 text-sm w-full"
-        style={errors[field] ? { borderColor: 'rgba(239,68,68,0.50)', boxShadow: '0 0 0 2px rgba(239,68,68,0.12)' } : {}}
-      />
-      {errors[field] && <span className="text-xs text-red-400">{errors[field]}</span>}
-    </div>
-  );
+  const selectedBidder = BIDDER_TEMPLATES.find(b => b.id === bidderId) || BIDDER_TEMPLATES[5];
+
+  if (uploadComplete) {
+    return (
+      <div className="p-6">
+        <div className="card p-8 max-w-lg mx-auto text-center" style={{ borderTop: '4px solid #22c55e' }}>
+          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#dcfce7', border: '2px solid #bbf7d0' }}>
+            <CheckCircle2 className="w-7 h-7 text-green-500" />
+          </div>
+          <h2 className="text-lg font-bold mb-2" style={{ color: '#111827' }}>Documents Uploaded</h2>
+          <p className="text-xs mb-6" style={{ color: '#6b7280' }}>AI classification complete. Ready to run verification.</p>
+          <div className="space-y-2 mb-6 text-left">
+            {uploadResults.map((r, i) => (
+              <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: r.status === 'success' ? '#f0fdf4' : '#fef2f2', border: `1px solid ${r.status === 'success' ? '#bbf7d0' : '#fecaca'}` }}>
+                <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: r.status === 'success' ? '#16a34a' : '#dc2626' }} />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-medium truncate" style={{ color: '#111827' }}>{r.file}</div>
+                  <div className="text-[10px]" style={{ color: '#9ca3af' }}>{r.msg}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={() => { setActiveBidderId(bidderId === 'NEW' ? 'BIDDER-A' : bidderId); setCurrentTab('bidder-profile'); }}
+            className="btn-primary w-full py-3 rounded-xl text-sm flex items-center justify-center gap-2"
+          >
+            <ShieldCheck className="w-4 h-4" /> Open Bidder Profile & Run Verification
+          </button>
+          <button onClick={() => { setUploadComplete(false); setFiles([]); setUploadResults([]); }} className="mt-3 btn-secondary w-full py-2.5 rounded-xl text-xs">
+            Start Another Verification
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-full p-6 md:p-10 relative z-1">
-      <div className="max-w-2xl mx-auto">
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="card px-6 py-5 flex items-start justify-between gap-4" style={{ borderLeft: '4px solid #3b82f6' }}>
+        <div className="flex items-center gap-3 pl-2">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#eff6ff', border: '1.5px solid #bfdbfe' }}>
+            <Plus className="w-5 h-5 text-blue-600" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold" style={{ color: '#111827' }}>New Bid Verification</h1>
+            <p className="text-xs mt-0.5" style={{ color: '#9ca3af' }}>
+              Attach bid documents · AI classifies, OCR extracts, officer confirms, then run 3-track analysis
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-[10px] font-semibold shrink-0" style={{ color: '#9ca3af' }}>
+          <span className="w-2 h-2 rounded-full bg-green-500" /> AI Classifier Online
+        </div>
+      </div>
 
-        {/* Page header */}
-        <div className="mb-8 animate-fade-up">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.30)', boxShadow: '0 0 20px rgba(59,130,246,0.15)' }}>
-              <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">New Verification</h1>
-              <p className="text-xs text-slate-500">Add a bid to the review queue — registry pre-fetch runs automatically on submit</p>
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Left — Form Fields */}
+        <div className="space-y-4">
+          {/* Tender Selector */}
+          <div className="card p-5 space-y-3">
+            <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#9ca3af' }}>Step 1 — Select Tender</div>
+            <div className="space-y-2">
+              {SAMPLE_TENDERS.map(t => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTenderId(t.id)}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all text-xs"
+                  style={tenderId === t.id
+                    ? { background: '#eff6ff', border: '1.5px solid #bfdbfe' }
+                    : { background: '#f7f8fa', border: '1px solid #e5e7eb' }}
+                >
+                  <div className="w-2 h-2 rounded-full shrink-0" style={{ background: tenderId === t.id ? '#3b82f6' : '#d1d5db' }} />
+                  <span style={{ color: tenderId === t.id ? '#1d4ed8' : '#374151' }}>{t.label}</span>
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Info banner */}
-          <div className="mt-4 p-3 rounded-xl text-xs text-blue-300 flex gap-2 items-start" style={{ background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.20)' }}>
-            <svg className="w-4 h-4 shrink-0 mt-0.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            GST portal, Debarment Watchlist, and EPFO records will be pre-fetched automatically from government data adapters on submit.
+          {/* Bidder Selector */}
+          <div className="card p-5 space-y-3">
+            <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#9ca3af' }}>Step 2 — Select or Enter Bidder</div>
+            <div className="grid grid-cols-1 gap-2">
+              {BIDDER_TEMPLATES.map(b => (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => setBidderId(b.id)}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all text-xs"
+                  style={bidderId === b.id
+                    ? { background: b.bg, border: `1.5px solid ${b.border}` }
+                    : { background: '#f7f8fa', border: '1px solid #e5e7eb' }}
+                >
+                  <div className="w-2 h-2 rounded-full shrink-0" style={{ background: bidderId === b.id ? b.color : '#d1d5db' }} />
+                  <span className="flex-1 truncate" style={{ color: bidderId === b.id ? b.color : '#374151' }}>{b.label}</span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md shrink-0"
+                    style={{ background: b.bg, color: b.color }}>{b.riskHint}</span>
+                </button>
+              ))}
+            </div>
+
+            {bidderId === 'NEW' && (
+              <div className="space-y-2 mt-2">
+                <input type="text" value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Company Name" className="form-input w-full px-3 py-2.5 text-sm" />
+                <input type="text" value={pan} onChange={e => setPan(e.target.value)} placeholder="PAN Number" className="form-input w-full px-3 py-2.5 text-sm font-mono" />
+                <input type="text" value={gstin} onChange={e => setGstin(e.target.value)} placeholder="GSTIN" className="form-input w-full px-3 py-2.5 text-sm font-mono" />
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Form Card */}
-        <form
-          onSubmit={handleSubmit}
-          className="glass rounded-2xl p-6 md:p-8 space-y-6 animate-fade-up relative overflow-hidden"
-          style={{ animationDelay: '80ms', boxShadow: '0 24px 60px rgba(0,0,0,0.4)' }}
-        >
-          {/* Top shimmer */}
-          <div className="absolute top-0 left-8 right-8 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)' }} />
+        {/* Right — File Upload */}
+        <div className="space-y-4">
+          <div className="card p-5 space-y-4">
+            <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#9ca3af' }}>Step 3 — Attach Documents</div>
 
-          {/* Section: Company */}
-          <div>
-            <div className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-4 pb-2 border-b border-white/[0.05]">Company Information</div>
-            <div className="space-y-4">
-              <Field field="company_name" label="Company / Entity Name" placeholder="e.g. ABC Industrial Solutions Pvt. Ltd." />
-              <div className="grid grid-cols-2 gap-4">
-                <Field field="pan" label="PAN" placeholder="e.g. ABCDE1234F" />
-                <Field field="gstin" label="GSTIN" placeholder="e.g. 27ABCDE1234F1Z5" />
+            {/* Drop Zone */}
+            <div
+              ref={dropRef}
+              onClick={() => { const inp = document.createElement('input'); inp.type='file'; inp.accept='.pdf'; inp.multiple=true; inp.onchange=handleFileDrop; inp.click(); }}
+              onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.background = '#eff6ff'; }}
+              onDragLeave={e => { e.currentTarget.style.borderColor = '#d1d5db'; e.currentTarget.style.background = '#f7f8fa'; }}
+              onDrop={e => { e.currentTarget.style.borderColor = '#d1d5db'; e.currentTarget.style.background = '#f7f8fa'; handleFileDrop(e); }}
+              className="border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all"
+              style={{ background: '#f7f8fa', borderColor: '#d1d5db' }}
+            >
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: '#eff6ff', border: '1.5px solid #bfdbfe' }}>
+                <Upload className="w-5 h-5 text-blue-500" />
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Company Type</label>
-                <select
-                  id="nv-company_type"
-                  value={form.company_type}
-                  onChange={e => setForm(f => ({ ...f, company_type: e.target.value }))}
-                  className="glass-input px-4 py-2.5 text-sm w-full"
-                  style={{ appearance: 'none' }}
-                >
-                  {['Pvt Ltd', 'Public Ltd', 'Proprietorship', 'Partnership', 'LLP', 'OPC'].map(t => (
-                    <option key={t} value={t} style={{ background: '#0f172a' }}>{t}</option>
-                  ))}
-                </select>
+              <p className="text-sm font-semibold" style={{ color: '#374151' }}>Drag & drop PDFs here</p>
+              <p className="text-xs mt-1" style={{ color: '#9ca3af' }}>or click to browse · GST, PAN, OEM Auth, MSME, etc.</p>
+            </div>
+
+            {/* File List */}
+            {files.length > 0 && (
+              <div className="space-y-2">
+                {files.map(f => (
+                  <div key={f.name} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+                    <FileText className="w-4 h-4 text-blue-500 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-medium truncate" style={{ color: '#111827' }}>{f.name}</div>
+                      <div className="text-[10px]" style={{ color: '#9ca3af' }}>{(f.size / 1024).toFixed(0)} KB · PDF</div>
+                    </div>
+                    <button type="button" onClick={() => removeFile(f.name)} className="p-1 rounded-lg transition-all" style={{ color: '#9ca3af' }}
+                      onMouseEnter={e => e.currentTarget.style.color = '#dc2626'} onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}>
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
               </div>
-            </div>
-          </div>
+            )}
 
-          {/* Section: Tender */}
-          <div>
-            <div className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-4 pb-2 border-b border-white/[0.05]">Tender Assignment</div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tender ID</label>
-              <select
-                id="nv-tender_id"
-                value={form.tender_id}
-                onChange={e => setForm(f => ({ ...f, tender_id: e.target.value }))}
-                className="glass-input px-4 py-2.5 text-sm w-full"
-                style={{ appearance: 'none' }}
-              >
-                <option value="GEM/2026/B/784921" style={{ background: '#0f172a' }}>GEM/2026/B/784921 — Supply & Installation of Industrial Safety Equipment</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Section: Claims */}
-          <div>
-            <div className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-4 pb-2 border-b border-white/[0.05]">Eligibility Claims</div>
-            <div className="space-y-4">
-              {[
-                { key: 'claims_msme',    title: 'Claims MSME Benefit',       desc: 'Requires valid Udyam Registration Certificate' },
-                { key: 'claims_startup', title: 'Claims Startup India Benefit', desc: 'DPIIT-recognized startup registration required' },
-              ].map(cl => (
-                <button
-                  key={cl.key}
-                  type="button"
-                  onClick={() => setForm(f => ({ ...f, [cl.key]: !f[cl.key] }))}
-                  className="w-full flex items-center gap-3 text-left p-3 rounded-xl transition-all"
-                  style={{
-                    background: form[cl.key] ? 'rgba(59,130,246,0.10)' : 'rgba(255,255,255,0.02)',
-                    border: `1px solid ${form[cl.key] ? 'rgba(59,130,246,0.28)' : 'rgba(255,255,255,0.06)'}`,
-                  }}
-                >
-                  <div
-                    className="w-5 h-5 rounded flex items-center justify-center shrink-0 transition-all"
-                    style={{ background: form[cl.key] ? '#3b82f6' : 'rgba(255,255,255,0.06)', border: `1px solid ${form[cl.key] ? '#3b82f6' : 'rgba(255,255,255,0.12)'}` }}
-                  >
-                    {form[cl.key] && (
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </div>
-                  <div>
-                    <div className={`text-sm font-semibold ${form[cl.key] ? 'text-blue-300' : 'text-slate-300'}`}>{cl.title}</div>
-                    <div className="text-xs text-slate-600">{cl.desc}</div>
-                  </div>
-                </button>
-              ))}
-
-              {/* Local content slider */}
-              <div className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <div className="text-sm font-semibold text-slate-300">Declared Local Content</div>
-                    <div className="text-xs text-slate-600">Min 50% for Class-I Local Supplier</div>
-                  </div>
-                  <div className="text-2xl font-black" style={{ color: form.local_content_pct >= 50 ? '#10b981' : '#f59e0b' }}>
-                    {form.local_content_pct}%
-                  </div>
-                </div>
-                <input
-                  type="range" min={0} max={100} step={5}
-                  value={form.local_content_pct}
-                  onChange={e => setForm(f => ({ ...f, local_content_pct: e.target.value }))}
-                  className="w-full accent-blue-500"
-                />
-                <div className="flex justify-between text-[10px] text-slate-600 mt-1">
-                  <span>0%</span>
-                  <span className="text-amber-500">50% threshold</span>
-                  <span>100%</span>
-                </div>
+            {files.length === 0 && (
+              <div className="text-center py-4">
+                <p className="text-xs" style={{ color: '#9ca3af' }}>
+                  Expected: GST Certificate, PAN, Udyam, OEM Authorization, MII Declaration
+                </p>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Submit */}
-          <div className="pt-2">
-            <button
-              id="nv-submit"
-              type="submit"
-              disabled={loading}
-              className="btn-glass-primary w-full py-3.5 rounded-xl text-sm flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                  Adding to Queue…
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  Add Bid to Review Queue
-                </>
-              )}
-            </button>
+          <button
+            type="submit"
+            disabled={uploading || files.length === 0}
+            className="btn-primary w-full py-4 rounded-2xl text-sm flex items-center justify-center gap-2"
+          >
+            {uploading ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                Uploading & Classifying…
+              </>
+            ) : (
+              <>
+                <ShieldCheck className="w-4 h-4" />
+                Upload Documents & Start Verification Prep
+              </>
+            )}
+          </button>
+
+          {/* Info */}
+          <div className="px-4 py-3 rounded-xl text-xs" style={{ background: '#eff6ff', border: '1.5px solid #bfdbfe', color: '#1d4ed8' }}>
+            <strong>How it works:</strong> AI classifies and OCR-extracts all document fields → Officer reviews and confirms extracted data → Run 3-track verification (Exact + Fuzzy + Correlation).
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 }

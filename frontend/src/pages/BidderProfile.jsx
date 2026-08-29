@@ -1,24 +1,26 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import OfficerDecisionPanel from '../components/decision/OfficerDecisionPanel';
+import { ArrowLeft } from 'lucide-react';
 
-const TABS = ['Documents', 'Overview', 'Verification Detail', 'Audit Log'];
+const TABS = ['Documents', 'Overview', 'Verification Detail', 'Audit Log', 'Officer Decision'];
 
 const RISK = {
-  LOW:      { text: 'text-emerald-300', bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.25)', glow: '0 0 40px rgba(16,185,129,0.12)', dot: '#10b981' },
-  MEDIUM:   { text: 'text-amber-300',   bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)', glow: '0 0 40px rgba(245,158,11,0.12)', dot: '#f59e0b' },
-  HIGH:     { text: 'text-red-300',     bg: 'rgba(239,68,68,0.08)',  border: 'rgba(239,68,68,0.25)',  glow: '0 0 40px rgba(239,68,68,0.12)',  dot: '#ef4444' },
-  CRITICAL: { text: 'text-red-200',     bg: 'rgba(239,68,68,0.12)',  border: 'rgba(239,68,68,0.35)',  glow: '0 0 50px rgba(239,68,68,0.18)',  dot: '#ef4444' },
-  PENDING:  { text: 'text-slate-400',   bg: 'rgba(100,116,139,0.08)',border: 'rgba(100,116,139,0.20)',glow: 'none',                           dot: '#64748b' },
+  LOW:      { label: 'LOW RISK',      color: '#15803d', bg: '#f0fdf4', border: '#bbf7d0', dot: '#22c55e', topBorder: '#22c55e' },
+  MEDIUM:   { label: 'MEDIUM RISK',   color: '#92400e', bg: '#fffbeb', border: '#fde68a', dot: '#f59e0b', topBorder: '#f59e0b' },
+  HIGH:     { label: 'HIGH RISK',     color: '#991b1b', bg: '#fef2f2', border: '#fecaca', dot: '#ef4444', topBorder: '#ef4444' },
+  CRITICAL: { label: 'CRITICAL RISK', color: '#9f1239', bg: '#fff1f2', border: '#fda4af', dot: '#f43f5e', topBorder: '#f43f5e' },
+  PENDING:  { label: 'PENDING',       color: '#475569', bg: '#f8fafc', border: '#e2e8f0', dot: '#94a3b8', topBorder: '#94a3b8' },
 };
 
 const CHK = {
-  PASS:    { cls: 'check-row-pass',    icon: '✓', color: '#10b981' },
-  FAIL:    { cls: 'check-row-fail',    icon: '✗', color: '#ef4444' },
-  FLAGGED: { cls: 'check-row-flagged', icon: '⚠', color: '#f59e0b' },
+  PASS:    { cls: 'check-row-pass',    icon: '✓', color: '#15803d' },
+  FAIL:    { cls: 'check-row-fail',    icon: '✗', color: '#991b1b' },
+  FLAGGED: { cls: 'check-row-flagged', icon: '⚠', color: '#92400e' },
 };
 
-const BASE = 'http://127.0.0.1:8000/api';
+const BASE = '/api';
 
-export default function BidderProfile({ bidderId, onRunVerificationTrigger, showToast }) {
+export default function BidderProfile({ bidderId, bidderName, tenderId, tenderTitle, onBack, onRunVerificationTrigger, showToast }) {
   const [activeTab, setActiveTab] = useState('Overview');
   const [bidder, setBidder] = useState(null);
   const [dashboard, setDashboard] = useState(null);
@@ -91,44 +93,62 @@ export default function BidderProfile({ bidderId, onRunVerificationTrigger, show
   );
 
   if (!bidder) return (
-    <div className="flex items-center justify-center h-64 text-slate-600 text-sm">
+    <div className="flex items-center justify-center h-64 text-sm" style={{ color: '#9ca3af' }}>
       No bidder selected. Pick one from the topbar or Demo Launcher.
     </div>
   );
 
+  // ── Bidder Header ──
   return (
-    <div className="flex flex-col h-full relative z-1">
+    <div className="flex flex-col h-full">
 
-      {/* ── Bidder Header ── */}
+      {/* Back button + header */}
       <div
-        className="px-6 pt-6 pb-0 relative"
-        style={{ background: `${riskStyle.bg}`, borderBottom: `1px solid ${riskStyle.border}`, boxShadow: riskStyle.glow }}
+        className="px-6 pt-5 pb-0"
+        style={{
+          background: riskStyle.bg,
+          borderBottom: `2px solid ${riskStyle.border}`,
+          borderTop: `4px solid ${riskStyle.topBorder}`,
+        }}
       >
-        {/* Top shimmer */}
-        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${riskStyle.dot}40, transparent)` }} />
-
+        {/* Back nav row */}
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 text-xs mb-3 transition-all font-medium"
+            style={{ color: '#6b7280' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#111827'}
+            onMouseLeave={e => e.currentTarget.style.color = '#6b7280'}
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Back to {tenderTitle || tenderId || 'Bidder List'}
+          </button>
+        )}
         <div className="flex items-start justify-between gap-6 mb-5">
           <div>
             <div className="flex items-center gap-2.5 mb-1">
-              <div className="w-2 h-2 rounded-full animate-pulse shrink-0" style={{ background: riskStyle.dot }} />
-              <h1 className="text-xl font-bold text-white leading-tight">{bidder.company_name}</h1>
+              <div className="w-2 h-2 rounded-full shrink-0" style={{ background: riskStyle.dot }} />
+              <h1 className="text-xl font-bold leading-tight" style={{ color: '#111827' }}>{bidder.company_name}</h1>
               <span
                 className="text-[11px] font-bold px-2.5 py-1 rounded-full"
-                style={{ background: riskStyle.bg, border: `1px solid ${riskStyle.border}`, color: riskStyle.dot }}
+                style={{ background: riskStyle.bg, border: `1.5px solid ${riskStyle.border}`, color: riskStyle.color }}
               >
-                {bidder.risk_level || 'PENDING'} RISK
+                {riskStyle.label}
               </span>
             </div>
-            <div className="flex items-center gap-4 text-[11px] text-slate-500 flex-wrap">
-              <span>PAN: <span className="font-mono text-slate-300">{bidder.pan || '—'}</span></span>
-              <span>GSTIN: <span className="font-mono text-slate-300">{bidder.gstin || '—'}</span></span>
-              <span>Tender: <span className="text-slate-400">{bidder.tender_id}</span></span>
-              {bidder.incorporation_date && <span>Incorporated: <span className="text-slate-400">{bidder.incorporation_date}</span></span>}
+            <div className="flex items-center gap-4 text-[11px] flex-wrap" style={{ color: '#9ca3af' }}>
+              <span>PAN: <span className="font-mono font-semibold" style={{ color: '#374151' }}>{bidder.pan || '—'}</span></span>
+              <span>GSTIN: <span className="font-mono font-semibold" style={{ color: '#374151' }}>{bidder.gstin || '—'}</span></span>
+              <span>Tender: <span style={{ color: '#374151' }}>{bidder.tender_id}</span></span>
+              {bidder.incorporation_date && <span>Incorporated: <span style={{ color: '#374151' }}>{bidder.incorporation_date}</span></span>}
             </div>
           </div>
           <div className="text-right shrink-0">
-            <div className="text-3xl font-black text-white">{bidder.compliance_score?.toFixed(0) ?? '—'}<span className="text-sm font-normal text-slate-500">/100</span></div>
-            <div className="text-[10px] text-slate-500 mt-0.5">Compliance Score</div>
+            <div className="text-3xl font-black" style={{ color: riskStyle.color }}>
+              {bidder.compliance_score?.toFixed(0) ?? '—'}
+              <span className="text-sm font-normal" style={{ color: '#9ca3af' }}>/100</span>
+            </div>
+            <div className="text-[10px] mt-0.5" style={{ color: '#9ca3af' }}>Compliance Score</div>
           </div>
         </div>
 
@@ -145,13 +165,13 @@ export default function BidderProfile({ bidderId, onRunVerificationTrigger, show
                 onClick={() => setActiveTab(tab)}
                 className="relative px-4 py-2.5 text-xs font-semibold rounded-t-xl transition-all flex items-center gap-1.5"
                 style={active
-                  ? { background: 'rgba(14,22,40,0.75)', backdropFilter: 'blur(12px)', color: '#e2e8f0', border: `1px solid ${riskStyle.border}`, borderBottom: 'none', marginBottom: '-1px' }
-                  : { color: '#475569', background: 'transparent', border: '1px solid transparent' }
+                  ? { background: '#ffffff', color: riskStyle.color, borderTop: `2px solid ${riskStyle.topBorder}`, borderLeft: '1px solid #e5e7eb', borderRight: '1px solid #e5e7eb', marginBottom: '-2px' }
+                  : { color: '#9ca3af', background: 'transparent' }
                 }
               >
                 {tab}
-                {flagCount > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(245,158,11,0.25)', color: '#fcd34d' }}>{flagCount}</span>}
-                {failCount > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(239,68,68,0.25)', color: '#fca5a5' }}>{failCount}</span>}
+                {flagCount > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full" style={{ background: '#fef3c7', color: '#92400e' }}>{flagCount}</span>}
+                {failCount > 0 && <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full" style={{ background: '#fee2e2', color: '#991b1b' }}>{failCount}</span>}
               </button>
             );
           })}
@@ -159,22 +179,22 @@ export default function BidderProfile({ bidderId, onRunVerificationTrigger, show
       </div>
 
       {/* ── Tab Content ── */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto" style={{ background: '#f0f2f5' }}>
 
         {/* DOCUMENTS */}
         {activeTab === 'Documents' && (
           <div className="p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Submitted Documents</h2>
+              <h2 className="text-xs font-bold uppercase tracking-widest" style={{ color: '#9ca3af' }}>Submitted Documents</h2>
               {!allConfirmed && bidder.documents.length > 0 && (
-                <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full" style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', color: '#fcd34d' }}>
+                <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full badge-amber">
                   Confirm all extractions before running verification
                 </span>
               )}
             </div>
 
             {bidder.documents.length === 0 && (
-              <div className="text-center py-16 text-slate-600">
+              <div className="text-center py-16" style={{ color: '#9ca3af' }}>
                 <div className="text-5xl mb-3 opacity-20">📄</div>
                 <p>No documents uploaded yet.</p>
               </div>
@@ -184,13 +204,13 @@ export default function BidderProfile({ bidderId, onRunVerificationTrigger, show
               const confirmed = !!doc.confirmed_fields;
               const fields = doc.confirmed_fields || doc.extracted_fields || {};
               return (
-                <div key={doc.id} className="glass rounded-2xl overflow-hidden animate-fade-up" style={{ boxShadow: confirmed ? '0 0 20px rgba(16,185,129,0.06)' : '0 0 20px rgba(245,158,11,0.06)' }}>
+                <div key={doc.id} className="card overflow-hidden animate-fade-up">
                   {/* Header */}
-                  <div className="flex items-center justify-between px-5 py-3.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}>
+                  <div className="flex items-center justify-between px-5 py-3.5" style={{ borderBottom: '1px solid #e5e7eb', background: '#f7f8fa' }}>
                     <div className="flex items-center gap-2.5">
-                      <div className="w-2 h-2 rounded-full shrink-0" style={{ background: confirmed ? '#10b981' : '#f59e0b' }} />
-                      <span className="text-sm font-semibold text-white">{doc.file_name}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-md text-slate-500" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <div className="w-2 h-2 rounded-full shrink-0" style={{ background: confirmed ? '#22c55e' : '#f59e0b' }} />
+                      <span className="text-sm font-semibold" style={{ color: '#111827' }}>{doc.file_name}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-md" style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', color: '#6b7280' }}>
                         {doc.doc_type || doc.classified_type || 'Unknown'}
                       </span>
                     </div>
@@ -198,18 +218,13 @@ export default function BidderProfile({ bidderId, onRunVerificationTrigger, show
                       <span
                         className="text-[10px] font-bold px-2.5 py-1 rounded-full"
                         style={confirmed
-                          ? { background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.28)', color: '#6ee7b7' }
-                          : { background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.28)', color: '#fcd34d' }
-                        }
+                          ? { background: '#dcfce7', border: '1.5px solid #bbf7d0', color: '#15803d' }
+                          : { background: '#fef3c7', border: '1.5px solid #fde68a', color: '#92400e' }}
                       >
                         {confirmed ? '✓ CONFIRMED' : '⏳ AWAITING CONFIRMATION'}
                       </span>
                       {!confirmed && (
-                        <button
-                          id={`confirm-${doc.id}`}
-                          onClick={() => startConfirm(doc)}
-                          className="btn-glass-primary px-3 py-1.5 rounded-lg text-xs"
-                        >
+                        <button id={`confirm-${doc.id}`} onClick={() => startConfirm(doc)} className="btn-primary px-3 py-1.5 rounded-lg text-xs">
                           Review & Confirm
                         </button>
                       )}
@@ -217,17 +232,17 @@ export default function BidderProfile({ bidderId, onRunVerificationTrigger, show
                   </div>
                   {/* Fields grid */}
                   <div className="px-5 py-4">
-                    <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-3">
+                    <p className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: '#9ca3af' }}>
                       {confirmed ? 'Confirmed Fields' : 'Extracted Fields (Pending Confirmation)'}
                     </p>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                       {Object.entries(fields).map(([k, v]) => (
-                        <div key={k} className="glass-inner px-3 py-2">
-                          <div className="text-[10px] text-slate-600 capitalize mb-0.5">{k.replace(/_/g, ' ')}</div>
-                          <div className="text-sm text-white font-medium break-all">{String(v)}</div>
+                        <div key={k} className="card-inner px-3 py-2">
+                          <div className="text-[10px] capitalize mb-0.5" style={{ color: '#9ca3af' }}>{k.replace(/_/g, ' ')}</div>
+                          <div className="text-sm font-medium break-all" style={{ color: '#111827' }}>{String(v)}</div>
                         </div>
                       ))}
-                      {Object.keys(fields).length === 0 && <p className="text-xs text-slate-600 col-span-3">No fields extracted.</p>}
+                      {Object.keys(fields).length === 0 && <p className="text-xs col-span-3" style={{ color: '#9ca3af' }}>No fields extracted.</p>}
                     </div>
                   </div>
                 </div>
@@ -240,7 +255,7 @@ export default function BidderProfile({ bidderId, onRunVerificationTrigger, show
                 id="run-verification-btn"
                 onClick={runVerify}
                 disabled={verifying}
-                className="btn-glass-primary w-full py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2"
+                className="btn-primary w-full py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2"
               >
                 {verifying ? (
                   <>
@@ -258,48 +273,45 @@ export default function BidderProfile({ bidderId, onRunVerificationTrigger, show
           </div>
         )}
 
-        {/* OVERVIEW / CHECKLIST */}
+        {/* OVERVIEW */}
         {activeTab === 'Overview' && (
           <div className="p-6 space-y-5">
             {/* Risk Verdict Banner */}
             {dashboard && (
               <div
-                className="rounded-2xl p-5 animate-fade-up relative overflow-hidden"
-                style={{ background: riskStyle.bg, border: `1px solid ${riskStyle.border}`, boxShadow: riskStyle.glow }}
+                className="rounded-2xl p-5 animate-fade-up"
+                style={{ background: riskStyle.bg, border: `1.5px solid ${riskStyle.border}` }}
               >
-                <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${riskStyle.dot}50, transparent)` }} />
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-1">Overall Risk Verdict</div>
-                    <div className="text-4xl font-black" style={{ color: riskStyle.dot }}>{dashboard.risk_level}</div>
-                    <div className="text-sm text-slate-400 mt-1">{dashboard.company_name} — {dashboard.overall_status?.replace(/_/g, ' ')}</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#9ca3af' }}>Overall Risk Verdict</div>
+                    <div className="text-4xl font-black" style={{ color: riskStyle.color }}>{dashboard.risk_level}</div>
+                    <div className="text-sm mt-1" style={{ color: '#6b7280' }}>{dashboard.company_name} — {dashboard.overall_status?.replace(/_/g, ' ')}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-5xl font-black text-white">{dashboard.compliance_score?.toFixed(0)}</div>
-                    <div className="text-xs text-slate-500">/ 100</div>
+                    <div className="text-5xl font-black" style={{ color: '#111827' }}>{dashboard.compliance_score?.toFixed(0)}</div>
+                    <div className="text-xs" style={{ color: '#9ca3af' }}>/ 100</div>
                   </div>
                 </div>
-                <div className="flex gap-5 mt-4 pt-4 text-sm font-semibold" style={{ borderTop: `1px solid ${riskStyle.dot}20` }}>
-                  <span className="text-emerald-400">✓ {dashboard.pass_count} Pass</span>
-                  <span className="text-red-400">✗ {dashboard.fail_count} Fail</span>
-                  <span className="text-amber-400">⚠ {dashboard.flagged_count} Flagged</span>
-                  <span className="ml-auto text-[11px] text-slate-600">{dashboard.total_checks} checks total</span>
+                <div className="flex gap-5 mt-4 pt-4 text-sm font-semibold" style={{ borderTop: `1px solid ${riskStyle.border}` }}>
+                  <span style={{ color: '#15803d' }}>✓ {dashboard.pass_count} Pass</span>
+                  <span style={{ color: '#991b1b' }}>✗ {dashboard.fail_count} Fail</span>
+                  <span style={{ color: '#92400e' }}>⚠ {dashboard.flagged_count} Flagged</span>
+                  <span className="ml-auto text-[11px]" style={{ color: '#9ca3af' }}>{dashboard.total_checks} checks total</span>
                 </div>
               </div>
             )}
 
-            {/* No checks yet */}
             {(!dashboard || dashboard.checklist?.length === 0) && (
-              <div className="text-center py-16 text-slate-600">
+              <div className="text-center py-16" style={{ color: '#9ca3af' }}>
                 <div className="text-5xl mb-3 opacity-20">🛡</div>
                 <p className="mb-3">No verification checks run yet.</p>
-                <button onClick={() => setActiveTab('Documents')} className="text-sm text-blue-400 hover:text-blue-300 underline transition">
+                <button onClick={() => setActiveTab('Documents')} className="text-sm text-blue-600 hover:text-blue-800 underline transition">
                   Go to Documents to run verification →
                 </button>
               </div>
             )}
 
-            {/* Grouped Checklist */}
             {dashboard?.checklist?.length > 0 && (
               <div className="space-y-4 animate-fade-up" style={{ animationDelay: '60ms' }}>
                 {['CORRELATION', 'FUZZY', 'EXACT'].map(trackType => {
@@ -307,12 +319,12 @@ export default function BidderProfile({ bidderId, onRunVerificationTrigger, show
                   if (!items.length) return null;
                   const label = {
                     CORRELATION: '🔗 Track C — Cross-Document Correlation',
-                    FUZZY: '🔍 Track B — Fuzzy Blacklist (Jaro-Winkler)',
-                    EXACT: '✓ Track A — Exact Registry Checks',
+                    FUZZY:       '🔍 Track B — Fuzzy Blacklist (Jaro-Winkler)',
+                    EXACT:       '✓ Track A — Exact Registry Checks',
                   }[trackType];
                   return (
                     <div key={trackType}>
-                      <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2">{label}</div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: '#9ca3af' }}>{label}</div>
                       <div className="space-y-2">
                         {items.map((chk, i) => {
                           const c = CHK[chk.result] || CHK.PASS;
@@ -326,12 +338,12 @@ export default function BidderProfile({ bidderId, onRunVerificationTrigger, show
                               <span className="text-lg font-bold w-5 shrink-0 mt-0.5" style={{ color: c.color }}>{c.icon}</span>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-0.5">
-                                  <span className="text-sm font-semibold text-white">{chk.module.replace(/_/g, ' ')}</span>
-                                  <span className="text-[10px] text-slate-600 ml-auto">{chk.check_type}</span>
+                                  <span className="text-sm font-semibold" style={{ color: '#111827' }}>{chk.module.replace(/_/g, ' ')}</span>
+                                  <span className="text-[10px] ml-auto" style={{ color: '#9ca3af' }}>{chk.check_type}</span>
                                 </div>
-                                <p className="text-xs text-slate-400 line-clamp-2">{chk.reason}</p>
+                                <p className="text-xs line-clamp-2" style={{ color: '#6b7280' }}>{chk.reason}</p>
                               </div>
-                              <svg className="w-4 h-4 shrink-0 mt-1 text-slate-700 group-hover:text-slate-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-4 h-4 shrink-0 mt-1 transition" style={{ color: '#d1d5db' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
                             </button>
@@ -346,25 +358,28 @@ export default function BidderProfile({ bidderId, onRunVerificationTrigger, show
           </div>
         )}
 
-        {/* VERIFICATION DETAIL / DRILL-DOWN */}
+        {/* VERIFICATION DETAIL */}
         {activeTab === 'Verification Detail' && (
           <div className="p-6">
             {!selectedCheck && (
               <div className="space-y-3">
-                <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Select a flagged/failed check to inspect:</h2>
+                <h2 className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#9ca3af' }}>Select a flagged/failed check to inspect:</h2>
                 {(dashboard?.checklist || []).filter(c => c.result !== 'PASS').map((chk, i) => {
                   const c = CHK[chk.result] || CHK.PASS;
                   return (
                     <button key={i} onClick={() => setSelectedCheck(chk)} className={`${c.cls} w-full flex items-start gap-3 p-4 rounded-xl text-left`}>
                       <span className="text-lg font-bold" style={{ color: c.color }}>{c.icon}</span>
-                      <div><div className="font-semibold text-sm text-white">{chk.module.replace(/_/g, ' ')}</div><div className="text-xs text-slate-500 mt-0.5">{chk.reason}</div></div>
+                      <div>
+                        <div className="font-semibold text-sm" style={{ color: '#111827' }}>{chk.module.replace(/_/g, ' ')}</div>
+                        <div className="text-xs mt-0.5" style={{ color: '#6b7280' }}>{chk.reason}</div>
+                      </div>
                     </button>
                   );
                 })}
                 {(dashboard?.checklist || []).filter(c => c.result !== 'PASS').length === 0 && (
                   <div className="text-center py-16">
                     <div className="text-5xl mb-3">✅</div>
-                    <p className="text-emerald-400 font-semibold">All checks passed — no issues to inspect</p>
+                    <p className="font-semibold" style={{ color: '#15803d' }}>All checks passed — no issues to inspect</p>
                   </div>
                 )}
               </div>
@@ -374,47 +389,50 @@ export default function BidderProfile({ bidderId, onRunVerificationTrigger, show
               const c = CHK[selectedCheck.result] || CHK.PASS;
               return (
                 <div className="max-w-2xl animate-fade-up">
-                  <button onClick={() => setSelectedCheck(null)} className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-white mb-6 transition">
+                  <button onClick={() => setSelectedCheck(null)} className="flex items-center gap-1.5 text-xs mb-6 transition" style={{ color: '#9ca3af' }}
+                    onMouseEnter={e => e.currentTarget.style.color = '#111827'} onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                     Back to all checks
                   </button>
 
                   {/* Verdict Card */}
                   <div
-                    className="rounded-2xl p-6 mb-5 relative overflow-hidden"
-                    style={{ background: `${c.color}12`, border: `1px solid ${c.color}30`, boxShadow: `0 0 40px ${c.color}12` }}
+                    className="rounded-2xl p-6 mb-5"
+                    style={{
+                      background: c.color === '#15803d' ? '#f0fdf4' : c.color === '#92400e' ? '#fffbeb' : '#fef2f2',
+                      border: `1.5px solid ${c.color === '#15803d' ? '#bbf7d0' : c.color === '#92400e' ? '#fde68a' : '#fecaca'}`,
+                    }}
                   >
-                    <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${c.color}50, transparent)` }} />
                     <div className="flex items-center gap-4 mb-4">
                       <div className="text-4xl">{c.icon}</div>
                       <div>
                         <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: c.color }}>
                           {selectedCheck.check_type} — {selectedCheck.result}
                         </div>
-                        <div className="text-xl font-bold text-white">{selectedCheck.module.replace(/_/g, ' ')}</div>
+                        <div className="text-xl font-bold" style={{ color: '#111827' }}>{selectedCheck.module.replace(/_/g, ' ')}</div>
                       </div>
                     </div>
-                    <p className="text-sm text-slate-300 leading-relaxed">{selectedCheck.reason}</p>
+                    <p className="text-sm leading-relaxed" style={{ color: '#374151' }}>{selectedCheck.reason}</p>
                   </div>
 
-                  {/* Evidence Fields */}
+                  {/* Evidence */}
                   {selectedCheck.source_fields && Object.keys(selectedCheck.source_fields).length > 0 && (
-                    <div className="glass rounded-2xl p-5">
-                      <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Evidence — Fields That Drove This Check</h3>
+                    <div className="card p-5">
+                      <h3 className="text-[10px] font-bold uppercase tracking-widest mb-4" style={{ color: '#9ca3af' }}>Evidence — Fields That Drove This Check</h3>
                       <div className="space-y-2">
                         {Object.entries(selectedCheck.source_fields).map(([k, v]) => (
-                          <div key={k} className="flex items-start gap-3 py-2.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                            <span className="text-[11px] text-slate-600 w-48 shrink-0 font-mono capitalize pt-0.5">{k.replace(/_/g, ' ')}</span>
-                            <span className="text-sm text-white font-medium break-all">{String(v)}</span>
+                          <div key={k} className="flex items-start gap-3 py-2.5" style={{ borderBottom: '1px solid #f1f5f9' }}>
+                            <span className="text-[11px] w-48 shrink-0 font-mono capitalize pt-0.5" style={{ color: '#9ca3af' }}>{k.replace(/_/g, ' ')}</span>
+                            <span className="text-sm font-medium break-all" style={{ color: '#111827' }}>{String(v)}</span>
                           </div>
                         ))}
                       </div>
                     </div>
                   )}
 
-                  <div className="mt-4 px-4 py-3 rounded-xl text-xs text-slate-600 glass-inner">
-                    <span className="font-semibold text-slate-500">Checked:</span> {new Date(selectedCheck.checked_at).toLocaleString()}
-                    <span className="ml-4 font-semibold text-slate-500">Type:</span> {selectedCheck.check_type}
+                  <div className="mt-4 px-4 py-3 rounded-xl text-xs card-inner" style={{ color: '#9ca3af' }}>
+                    <span className="font-semibold" style={{ color: '#6b7280' }}>Checked:</span> {new Date(selectedCheck.checked_at).toLocaleString()}
+                    <span className="ml-4 font-semibold" style={{ color: '#6b7280' }}>Type:</span> {selectedCheck.check_type}
                   </div>
                 </div>
               );
@@ -425,80 +443,84 @@ export default function BidderProfile({ bidderId, onRunVerificationTrigger, show
         {/* AUDIT LOG */}
         {activeTab === 'Audit Log' && (
           <div className="p-6 space-y-2">
-            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
+            <h2 className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#9ca3af' }}>
               Audit Trail — {bidder.company_name}
             </h2>
-            {auditLog.length === 0 && <div className="text-center py-16 text-slate-600">No audit events recorded yet.</div>}
+            {auditLog.length === 0 && <div className="text-center py-16" style={{ color: '#9ca3af' }}>No audit events recorded yet.</div>}
             {auditLog.map((e, i) => {
               const isGood = ['SUCCESS', 'LOW', 'QUALIFIED', 'VERIFIED'].includes(e.result);
               const isBad  = ['HIGH', 'FAILED', 'CRITICAL', 'DISQUALIFIED'].includes(e.result);
-              const accent = isGood ? '#10b981' : isBad ? '#ef4444' : '#f59e0b';
+              const color  = isGood ? '#15803d' : isBad ? '#991b1b' : '#92400e';
+              const bg     = isGood ? '#dcfce7' : isBad ? '#fee2e2' : '#fef3c7';
+              const border = isGood ? '#bbf7d0' : isBad ? '#fecaca' : '#fde68a';
               return (
-                <div key={i} className="glass rounded-xl flex gap-4 p-4 animate-fade-up" style={{ animationDelay: `${i * 30}ms` }}>
-                  <div className="w-2 h-2 rounded-full mt-2 shrink-0 animate-pulse" style={{ background: accent }} />
+                <div key={i} className="card flex gap-4 p-4 animate-fade-up" style={{ animationDelay: `${i * 30}ms` }}>
+                  <div className="w-2 h-2 rounded-full mt-2 shrink-0" style={{ background: color }} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-sm font-semibold text-white">{e.action?.replace(/_/g, ' ')}</span>
-                      <span
-                        className="text-[10px] font-bold px-2 py-0.5 rounded-md"
-                        style={{ background: `${accent}15`, border: `1px solid ${accent}28`, color: accent }}
-                      >
+                      <span className="text-sm font-semibold" style={{ color: '#111827' }}>{e.action?.replace(/_/g, ' ')}</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md"
+                        style={{ background: bg, border: `1px solid ${border}`, color }}>
                         {e.result}
                       </span>
-                      <span className="text-[10px] text-slate-600 ml-auto">{new Date(e.timestamp).toLocaleString()}</span>
+                      <span className="text-[10px] ml-auto" style={{ color: '#9ca3af' }}>{new Date(e.timestamp).toLocaleString()}</span>
                     </div>
-                    <div className="text-xs text-slate-400 leading-relaxed">{e.details}</div>
-                    <div className="text-[10px] text-slate-600 mt-1">Source: {e.source} · {e.actor}</div>
+                    <div className="text-xs leading-relaxed" style={{ color: '#6b7280' }}>{e.details}</div>
+                    <div className="text-[10px] mt-1" style={{ color: '#9ca3af' }}>Source: {e.source} · {e.actor}</div>
                   </div>
                 </div>
               );
             })}
           </div>
         )}
+
+        {/* OFFICER DECISION */}
+        {activeTab === 'Officer Decision' && (
+          <div className="p-6">
+            <OfficerDecisionPanel bidder={bidder} onDecisionSaved={load} />
+          </div>
+        )}
       </div>
 
       {/* ── Confirm Fields Modal ── */}
       {confirmingDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}>
           <div
-            className="glass-elevated rounded-2xl w-full max-w-xl max-h-[80vh] flex flex-col animate-fade-up"
-            style={{ boxShadow: '0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)' }}
+            className="card w-full max-w-xl max-h-[80vh] flex flex-col animate-fade-up"
+            style={{ boxShadow: '0 25px 60px rgba(0,0,0,0.15)', borderTop: '4px solid #3b82f6' }}
           >
             {/* Modal header */}
-            <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid #e5e7eb' }}>
               <div>
-                <h3 className="text-sm font-bold text-white">Review & Confirm Extracted Fields</h3>
-                <p className="text-xs text-slate-500 mt-0.5">{confirmingDoc.file_name}</p>
+                <h3 className="text-sm font-bold" style={{ color: '#111827' }}>Review & Confirm Extracted Fields</h3>
+                <p className="text-xs mt-0.5" style={{ color: '#6b7280' }}>{confirmingDoc.file_name}</p>
               </div>
-              <button onClick={() => setConfirmingDoc(null)} className="btn-glass-ghost p-2 rounded-xl">
-                <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              <button onClick={() => setConfirmingDoc(null)} className="btn-secondary p-2 rounded-xl">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
-              <div
-                className="text-xs text-blue-300 p-3 rounded-xl flex gap-2"
-                style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.20)' }}
-              >
+              <div className="text-xs p-3 rounded-xl flex gap-2" style={{ background: '#eff6ff', border: '1.5px solid #bfdbfe', color: '#1d4ed8' }}>
                 <svg className="w-3.5 h-3.5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 Human-in-the-loop checkpoint — edit any field before confirming. Nothing is verified until you confirm.
               </div>
               {Object.entries(confirmFields).map(([k, v]) => (
                 <div key={k} className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{k.replace(/_/g, ' ')}</label>
+                  <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#9ca3af' }}>{k.replace(/_/g, ' ')}</label>
                   <input
                     type="text"
                     value={String(v)}
                     onChange={e => setConfirmFields(f => ({ ...f, [k]: e.target.value }))}
-                    className="glass-input px-3 py-2 text-sm w-full"
+                    className="form-input px-3 py-2 text-sm w-full"
                   />
                 </div>
               ))}
             </div>
 
-            <div className="flex gap-3 px-6 py-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-              <button onClick={() => setConfirmingDoc(null)} className="btn-glass-ghost flex-1 py-2.5 rounded-xl text-sm">Cancel</button>
-              <button id="confirm-fields-submit" onClick={submitConfirm} className="btn-glass-primary flex-1 py-2.5 rounded-xl text-sm">
+            <div className="flex gap-3 px-6 py-4" style={{ borderTop: '1px solid #e5e7eb' }}>
+              <button onClick={() => setConfirmingDoc(null)} className="btn-secondary flex-1 py-2.5 rounded-xl text-sm">Cancel</button>
+              <button id="confirm-fields-submit" onClick={submitConfirm} className="btn-primary flex-1 py-2.5 rounded-xl text-sm">
                 ✓ Confirm Fields
               </button>
             </div>
@@ -508,3 +530,4 @@ export default function BidderProfile({ bidderId, onRunVerificationTrigger, show
     </div>
   );
 }
+

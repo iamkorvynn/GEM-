@@ -25,8 +25,10 @@ class Tender(Base):
     created_date = Column(String, nullable=False)
     deadline = Column(String, nullable=False)
     estimated_cost = Column(String, nullable=True)
-    status = Column(String, default="ACTIVE") # ACTIVE, CLOSED, UNDER_EVALUATION
+    status = Column(String, default="ACTIVE") # ACTIVE, CLOSED, UNDER_EVALUATION, COMPLETED
     raw_document_path = Column(String, nullable=True)
+    winner_bidder_id = Column(String, nullable=True)
+    award_notes = Column(Text, nullable=True)
 
     requirements = relationship("Requirement", back_populates="tender", cascade="all, delete-orphan")
     bidders = relationship("Bidder", back_populates="tender", cascade="all, delete-orphan")

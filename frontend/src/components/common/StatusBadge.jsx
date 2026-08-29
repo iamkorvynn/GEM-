@@ -1,33 +1,32 @@
 import React from 'react';
 
 const BADGE_STYLE = {
-  // Success states
-  VERIFIED:    { bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.28)', color: '#6ee7b7' },
-  QUALIFIED:   { bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.28)', color: '#6ee7b7' },
-  ACTIVE:      { bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.28)', color: '#6ee7b7' },
-  PASS:        { bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.28)', color: '#6ee7b7' },
+  // Success
+  VERIFIED:    { bg: '#dcfce7', border: '#bbf7d0', color: '#15803d' },
+  QUALIFIED:   { bg: '#dcfce7', border: '#bbf7d0', color: '#15803d' },
+  ACTIVE:      { bg: '#dcfce7', border: '#bbf7d0', color: '#15803d' },
+  PASS:        { bg: '#dcfce7', border: '#bbf7d0', color: '#15803d' },
+  LOW:         { bg: '#dcfce7', border: '#bbf7d0', color: '#15803d' },
   // Warning
-  'REVIEW REQUIRED': { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.28)', color: '#fcd34d' },
-  REVIEW_REQUIRED:   { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.28)', color: '#fcd34d' },
-  MEDIUM:      { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.28)', color: '#fcd34d' },
-  PENDING:     { bg: 'rgba(100,116,139,0.12)', border: 'rgba(100,116,139,0.25)', color: '#94a3b8' },
+  'REVIEW REQUIRED': { bg: '#fef3c7', border: '#fde68a', color: '#92400e' },
+  REVIEW_REQUIRED:   { bg: '#fef3c7', border: '#fde68a', color: '#92400e' },
+  MEDIUM:      { bg: '#fef3c7', border: '#fde68a', color: '#92400e' },
+  PENDING:     { bg: '#f1f5f9', border: '#e2e8f0', color: '#475569' },
+  FLAGGED:     { bg: '#fef3c7', border: '#fde68a', color: '#92400e' },
   // Danger
-  'HIGH RISK': { bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.28)', color: '#fca5a5' },
-  HIGH:        { bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.28)', color: '#fca5a5' },
-  CRITICAL:    { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.35)', color: '#fca5a5' },
-  FAILED:      { bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.28)', color: '#fca5a5' },
-  FAIL:        { bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.28)', color: '#fca5a5' },
-  // Info
-  LOW:         { bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.28)', color: '#6ee7b7' },
-  FLAGGED:     { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.28)', color: '#fcd34d' },
+  'HIGH RISK': { bg: '#fee2e2', border: '#fecaca', color: '#991b1b' },
+  HIGH:        { bg: '#fee2e2', border: '#fecaca', color: '#991b1b' },
+  CRITICAL:    { bg: '#fff1f2', border: '#fda4af', color: '#9f1239' },
+  FAILED:      { bg: '#fee2e2', border: '#fecaca', color: '#991b1b' },
+  FAIL:        { bg: '#fee2e2', border: '#fecaca', color: '#991b1b' },
 };
 
 export default function StatusBadge({ status }) {
-  const s = BADGE_STYLE[status?.toUpperCase()] || BADGE_STYLE[status] || { bg: 'rgba(100,116,139,0.10)', border: 'rgba(100,116,139,0.20)', color: '#94a3b8' };
+  const s = BADGE_STYLE[status?.toUpperCase()] || BADGE_STYLE[status] || { bg: '#f1f5f9', border: '#e2e8f0', color: '#475569' };
   return (
     <span
       className="inline-flex items-center text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wide uppercase shrink-0"
-      style={{ background: s.bg, border: `1px solid ${s.border}`, color: s.color, backdropFilter: 'blur(8px)' }}
+      style={{ background: s.bg, border: `1.5px solid ${s.border}`, color: s.color }}
     >
       {status}
     </span>

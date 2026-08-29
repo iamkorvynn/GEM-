@@ -52,14 +52,20 @@ class TenderSchema(BaseModel):
     bidders_count: int = 0
     verification_progress: float = 0.0
     requirements: List[RequirementSchema] = []
+    winner_bidder_id: Optional[str] = None
+    award_notes: Optional[str] = None
 
 class TenderCreate(BaseModel):
-    id: str
+    id: Optional[str] = None  # auto-generated if not supplied
     title: str
     department: str
     description: Optional[str] = None
     deadline: str
     estimated_cost: Optional[str] = None
+
+class AwardDecisionCreate(BaseModel):
+    winner_bidder_id: Optional[str] = None  # None = "No Award"
+    award_notes: str = ""
 
 class ExtractedEntitySchema(BaseModel):
     id: int

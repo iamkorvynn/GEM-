@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { UserCheck, CheckCircle2, XCircle, HelpCircle, AlertTriangle, ShieldCheck, Save } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { UserCheck, CheckCircle2, XCircle, HelpCircle, AlertTriangle, Save } from 'lucide-react';
 import { submitOfficerDecision } from '../../services/api';
 
 export default function OfficerDecisionPanel({ bidder, onDecisionSaved }) {
@@ -19,15 +19,11 @@ export default function OfficerDecisionPanel({ bidder, onDecisionSaved }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!remarks.trim()) {
-      alert('Mandatory Procurement Officer remarks are required.');
-      return;
-    }
+    if (!remarks.trim()) { alert('Mandatory Procurement Officer remarks are required.'); return; }
     if (isOverriding && !overrideJustification.trim()) {
       alert('Justification is mandatory when overriding the AI recommendation.');
       return;
     }
-
     setSaving(true);
     submitOfficerDecision(bidder.id, decision, remarks, overrideJustification)
       .then(() => {
@@ -36,146 +32,126 @@ export default function OfficerDecisionPanel({ bidder, onDecisionSaved }) {
         setTimeout(() => setSavedSuccess(false), 3000);
         if (onDecisionSaved) onDecisionSaved();
       })
-      .catch((err) => {
-        setSaving(false);
-        alert(err.message);
-      });
+      .catch(err => { setSaving(false); alert(err.message); });
   };
 
+  const DECISIONS = [
+    { id: 'QUALIFIED',            label: 'QUALIFIED',             sub: 'Approve bid for commercial evaluation', Icon: CheckCircle2, color: '#15803d', bg: '#f0fdf4', border: '#bbf7d0' },
+    { id: 'REQUEST_CLARIFICATION',label: 'REQUEST CLARIFICATION', sub: 'Issue clarification notice to bidder',  Icon: HelpCircle,   color: '#92400e', bg: '#fffbeb', border: '#fde68a' },
+    { id: 'DISQUALIFIED',         label: 'DISQUALIFIED',          sub: 'Reject bid due to non-compliance',      Icon: XCircle,      color: '#991b1b', bg: '#fef2f2', border: '#fecaca' },
+  ];
+
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs space-y-5">
-      <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+    <div className="card p-6 space-y-5">
+      <div className="flex items-center justify-between pb-4" style={{ borderBottom: '1.5px solid #e5e7eb' }}>
         <div>
-          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center">
-            <UserCheck className="w-4 h-4 mr-2 text-blue-600" /> Procurement Officer Final Qualification Decision
+          <h2 className="text-sm font-bold flex items-center gap-2" style={{ color: '#111827' }}>
+            <UserCheck className="w-4 h-4 text-blue-600" />
+            Procurement Officer Final Qualification Decision
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs mt-0.5" style={{ color: '#6b7280' }}>
             Human-in-the-loop governance: The Procurement Officer makes the final legally binding qualification action.
           </p>
         </div>
-        <div className="text-right">
-          <span className="text-[10px] text-slate-400 block font-bold uppercase">AI System Recommendation</span>
-          <span className={`text-xs font-bold ${aiRecommendation === 'QUALIFIED' ? 'text-emerald-600' : 'text-amber-600'}`}>
-            {aiRecommendation === 'QUALIFIED' ? 'RECOMMEND QUALIFICATION' : 'RECOMMEND MANUAL REVIEW'}
+        <div className="text-right shrink-0 ml-4">
+          <span className="text-[10px] font-bold uppercase block" style={{ color: '#9ca3af' }}>AI Recommendation</span>
+          <span className="text-xs font-bold" style={{ color: aiRecommendation === 'QUALIFIED' ? '#15803d' : '#92400e' }}>
+            {aiRecommendation === 'QUALIFIED' ? '✓ RECOMMEND QUALIFIED' : '⚠ RECOMMEND REVIEW'}
           </span>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Decision Action Radio Cards */}
+        {/* Decision Cards */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-            Select Officer Decision Action
+          <label className="block text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#374151' }}>
+            Select Officer Decision
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <button
-              type="button"
-              onClick={() => setDecision('QUALIFIED')}
-              className={`p-3.5 rounded-lg border text-left font-semibold transition-all flex items-center space-x-2 ${
-                decision === 'QUALIFIED'
-                  ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-500/20'
-                  : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              <CheckCircle2 className={`w-4 h-4 ${decision === 'QUALIFIED' ? 'text-emerald-600' : 'text-slate-400'}`} />
-              <div>
-                <div>QUALIFIED</div>
-                <div className="text-[10px] font-normal text-slate-500 mt-0.5">Approve bid for commercial evaluation</div>
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setDecision('REQUEST_CLARIFICATION')}
-              className={`p-3.5 rounded-lg border text-left font-semibold transition-all flex items-center space-x-2 ${
-                decision === 'REQUEST_CLARIFICATION'
-                  ? 'bg-amber-50 border-amber-500 text-amber-900 ring-2 ring-amber-500/20'
-                  : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              <HelpCircle className={`w-4 h-4 ${decision === 'REQUEST_CLARIFICATION' ? 'text-amber-600' : 'text-slate-400'}`} />
-              <div>
-                <div>REQUEST CLARIFICATION</div>
-                <div className="text-[10px] font-normal text-slate-500 mt-0.5">Issue clarification notice to bidder</div>
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setDecision('DISQUALIFIED')}
-              className={`p-3.5 rounded-lg border text-left font-semibold transition-all flex items-center space-x-2 ${
-                decision === 'DISQUALIFIED'
-                  ? 'bg-rose-50 border-rose-500 text-rose-900 ring-2 ring-rose-500/20'
-                  : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              <XCircle className={`w-4 h-4 ${decision === 'DISQUALIFIED' ? 'text-rose-600' : 'text-slate-400'}`} />
-              <div>
-                <div>DISQUALIFIED</div>
-                <div className="text-[10px] font-normal text-slate-500 mt-0.5">Reject bid due to non-compliance</div>
-              </div>
-            </button>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {DECISIONS.map(d => {
+              const active = decision === d.id;
+              return (
+                <button
+                  key={d.id}
+                  type="button"
+                  onClick={() => setDecision(d.id)}
+                  className="p-3.5 rounded-xl text-left transition-all"
+                  style={{
+                    background: active ? d.bg : '#f7f8fa',
+                    border: `1.5px solid ${active ? d.border : '#e5e7eb'}`,
+                    boxShadow: active ? `0 0 0 2px ${d.border}` : 'none',
+                  }}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <d.Icon className="w-4 h-4" style={{ color: active ? d.color : '#9ca3af' }} />
+                    <span className="text-xs font-bold" style={{ color: active ? d.color : '#374151' }}>{d.label}</span>
+                  </div>
+                  <div className="text-[10px]" style={{ color: '#9ca3af' }}>{d.sub}</div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* AI Override Notice */}
+        {/* Override warning */}
         {isOverriding && (
-          <div className="p-3 bg-amber-50 border border-amber-300 rounded-lg text-xs space-y-2">
-            <div className="flex items-center space-x-2 text-amber-800 font-bold">
+          <div className="p-3 rounded-xl" style={{ background: '#fffbeb', border: '1.5px solid #fde68a' }}>
+            <div className="flex items-center gap-2 mb-2" style={{ color: '#92400e' }}>
               <AlertTriangle className="w-4 h-4 text-amber-600" />
-              <span>AI Recommendation Override Warning</span>
+              <span className="text-xs font-bold">AI Recommendation Override Warning</span>
             </div>
-            <p className="text-amber-900 leading-relaxed text-[11px]">
-              You have selected <strong>{decision}</strong>, which differs from the AI System recommendation (<strong>{aiRecommendation}</strong>). Please enter a justification below for the audit log.
+            <p className="text-[11px] leading-relaxed mb-2" style={{ color: '#78350f' }}>
+              You selected <strong>{decision}</strong>, which differs from the AI recommendation (<strong>{aiRecommendation}</strong>).
+              Please enter justification below for the audit log.
             </p>
-            <div>
-              <label className="block text-[10px] font-bold text-amber-900 uppercase mb-1">
-                Override Justification (Mandatory)
-              </label>
-              <textarea
-                required
-                rows={2}
-                value={overrideJustification}
-                onChange={(e) => setOverrideJustification(e.target.value)}
-                placeholder="Explain legal or regulatory grounds for overriding AI recommendation..."
-                className="w-full p-2 bg-white border border-amber-300 rounded text-xs focus:ring-2 focus:ring-amber-500"
-              ></textarea>
-            </div>
+            <label className="block text-[10px] font-bold uppercase mb-1" style={{ color: '#92400e' }}>
+              Override Justification (Mandatory)
+            </label>
+            <textarea
+              required
+              rows={2}
+              value={overrideJustification}
+              onChange={e => setOverrideJustification(e.target.value)}
+              placeholder="Explain legal or regulatory grounds for overriding AI recommendation..."
+              className="form-input w-full p-2 text-xs"
+              style={{ background: '#fffbeb', borderColor: '#fde68a' }}
+            />
           </div>
         )}
 
-        {/* Mandatory Remarks Field */}
+        {/* Remarks */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+          <label className="block text-xs font-bold uppercase tracking-wider mb-1" style={{ color: '#374151' }}>
             Officer Qualification Remarks (Mandatory)
           </label>
           <textarea
             required
             rows={3}
             value={remarks}
-            onChange={(e) => setRemarks(e.target.value)}
+            onChange={e => setRemarks(e.target.value)}
             placeholder="Record official procurement remarks and notes..."
-            className="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg text-xs font-sans focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-slate-900"
-          ></textarea>
+            className="form-input w-full p-3 text-xs"
+          />
         </div>
 
-        {/* Action Buttons */}
+        {/* Action */}
         <div className="flex items-center justify-between pt-2">
           {savedSuccess ? (
-            <span className="text-xs font-bold text-emerald-600 flex items-center">
-              <CheckCircle2 className="w-4 h-4 mr-1" /> Decision saved to immutable audit trail!
+            <span className="text-xs font-bold text-green-700 flex items-center gap-1">
+              <CheckCircle2 className="w-4 h-4" /> Decision saved to immutable audit trail!
             </span>
           ) : (
-            <span className="text-[11px] text-slate-400">Recorded under officer account: procurement.officer@demo.gov.in</span>
+            <span className="text-[11px]" style={{ color: '#9ca3af' }}>
+              Recorded under: procurement.officer@demo.gov.in
+            </span>
           )}
-
           <button
             type="submit"
             disabled={saving}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-md transition-all flex items-center space-x-1.5"
+            className="btn-primary px-5 py-2.5 rounded-xl text-xs flex items-center gap-1.5"
           >
             <Save className="w-4 h-4" />
-            <span>{saving ? 'Saving Decision...' : 'Save & Record Final Decision'}</span>
+            {saving ? 'Saving Decision...' : 'Save & Record Final Decision'}
           </button>
         </div>
       </form>

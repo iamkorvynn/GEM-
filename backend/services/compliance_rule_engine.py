@@ -42,23 +42,35 @@ class ComplianceRuleEngine:
             explanation = "Requirement satisfied cleanly with verified evidence."
             evidence_doc = doc_by_type.get(evidence_type)
 
-            # Rule 1: Check document presence for mandatory requirements
-            if is_mandatory and not evidence_doc:
-                status = "MISSING"
-                explanation = f"Mandatory evidence document '{evidence_type}' was not submitted by bidder."
-                results.append({
-                    "requirement_id": req_id,
-                    "requirement_title": title,
-                    "status": status,
-                    "extracted_value": None,
-                    "verified_value": None,
-                    "verification_source": source,
-                    "confidence": 1.0,
-                    "evidence_doc_id": None,
-                    "evidence_file_name": None,
-                    "rule_explanation": explanation
-                })
-                continue
+            # Rule 1: Check document presence for mandatory requirements.
+            # IMPORTANT: For requirements verifiable via government registry adapters
+            # (GST, PAN, Debarment DB, Income Tax, MCA, Make in India threshold),
+            # the registry record is the primary evidence — a physical document upload
+            # is supplementary. Only hard-fail on MISSING for requirements that are
+            # purely document-based (OEM auth letter, Technical ISO cert, Udyam cert).
+            REGISTRY_VERIFIED_SOURCES = {
+                "GST", "PAN", "Debarment DB", "Income Tax", "MCA", "Make in India"
+            }
+            if is_mandatory and not evidence_doc and source not in REGISTRY_VERIFIED_SOURCES:
+                # Check if the government adapter has a record we can use
+                govt_fallback = verification_records.get(source)
+                if not govt_fallback or govt_fallback.get("status") == "FAILED":
+                    status = "MISSING"
+                    explanation = f"Mandatory evidence document '{evidence_type}' was not submitted by bidder."
+                    results.append({
+                        "requirement_id": req_id,
+                        "requirement_title": title,
+                        "status": status,
+                        "extracted_value": None,
+                        "verified_value": None,
+                        "verification_source": source,
+                        "confidence": 1.0,
+                        "evidence_doc_id": None,
+                        "evidence_file_name": None,
+                        "rule_explanation": explanation
+                    })
+                    continue
+                # else: fall through — registry data available, continue evaluation
 
             # Rule 2: Conditional Requirements (e.g. Udyam required ONLY if MSME benefit claimed)
             if "Udyam" in title or "MSME" in title:

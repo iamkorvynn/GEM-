@@ -2,36 +2,35 @@ import React, { useEffect, useState } from 'react';
 import { ShieldAlert, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, ArrowRight } from 'lucide-react';
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  ScatterChart, Scatter, ZAxis, Cell
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
 
-const BASE = 'http://127.0.0.1:8000/api';
+const BASE = '/api';
 
 const RISK_META = {
-  LOW:     { color: '#10b981', bg: 'rgba(16,185,129,0.10)', border: 'rgba(16,185,129,0.25)', label: 'Low Risk' },
-  MEDIUM:  { color: '#f59e0b', bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.25)', label: 'Medium Risk' },
-  HIGH:    { color: '#ef4444', bg: 'rgba(239,68,68,0.10)',  border: 'rgba(239,68,68,0.25)',  label: 'High Risk' },
-  PENDING: { color: '#64748b', bg: 'rgba(100,116,139,0.10)',border: 'rgba(100,116,139,0.20)',label: 'Pending' },
+  LOW:     { color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', text: '#15803d', label: 'Low Risk' },
+  MEDIUM:  { color: '#d97706', bg: '#fffbeb', border: '#fde68a', text: '#92400e', label: 'Medium Risk' },
+  HIGH:    { color: '#dc2626', bg: '#fef2f2', border: '#fecaca', text: '#991b1b', label: 'High Risk' },
+  PENDING: { color: '#6b7280', bg: '#f8fafc', border: '#e2e8f0', text: '#475569', label: 'Pending' },
 };
 
-function GlassTooltip({ active, payload, label }) {
+function LightTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="glass rounded-xl px-4 py-3 text-xs shadow-2xl" style={{ border: '1px solid rgba(255,255,255,0.10)' }}>
-      {label && <div className="font-bold text-slate-300 mb-1">{label}</div>}
+    <div className="rounded-xl px-4 py-3 text-xs" style={{ background: '#fff', border: '1.5px solid #e5e7eb', boxShadow: '0 8px 24px rgba(0,0,0,0.10)' }}>
+      {label && <div className="font-bold mb-1" style={{ color: '#374151' }}>{label}</div>}
       {payload.map((p, i) => (
         <div key={i} className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full" style={{ background: p.fill || p.color || p.stroke }} />
-          <span className="text-slate-400">{p.name}:</span>
-          <span className="text-white font-semibold">{p.value}</span>
+          <span style={{ color: '#6b7280' }}>{p.name}:</span>
+          <span className="font-semibold" style={{ color: '#111827' }}>{p.value}</span>
         </div>
       ))}
     </div>
   );
 }
 
-export default function RiskAnalytics({ setCurrentTab, setActiveBidderId }) {
+export default function RiskAnalytics({ go, showToast }) {
   const [bidders, setBidders] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -52,7 +51,6 @@ export default function RiskAnalytics({ setCurrentTab, setActiveBidderId }) {
     </div>
   );
 
-  // ── Derived stats ──────────────────────────────────────────────────────────
   const counts = { LOW: 0, MEDIUM: 0, HIGH: 0, PENDING: 0 };
   bidders.forEach(b => { counts[b.risk_level] = (counts[b.risk_level] || 0) + 1; });
 
@@ -61,7 +59,7 @@ export default function RiskAnalytics({ setCurrentTab, setActiveBidderId }) {
     : 0;
 
   const scoreDistribution = [
-    { range: '90–100', count: bidders.filter(b => b.compliance_score >= 90).length, color: '#10b981' },
+    { range: '90–100', count: bidders.filter(b => b.compliance_score >= 90).length, color: '#22c55e' },
     { range: '70–89',  count: bidders.filter(b => b.compliance_score >= 70 && b.compliance_score < 90).length, color: '#3b82f6' },
     { range: '50–69',  count: bidders.filter(b => b.compliance_score >= 50 && b.compliance_score < 70).length, color: '#f59e0b' },
     { range: '<50',    count: bidders.filter(b => b.compliance_score < 50).length, color: '#ef4444' },
@@ -79,98 +77,90 @@ export default function RiskAnalytics({ setCurrentTab, setActiveBidderId }) {
   const sorted = [...bidders].sort((a, b) => (a.compliance_score || 0) - (b.compliance_score || 0));
 
   return (
-    <div className="p-6 space-y-6 relative z-1">
+    <div className="p-6 space-y-6">
 
-      {/* ── Header ── */}
-      <div className="glass rounded-2xl px-6 py-5 relative overflow-hidden animate-fade-up"
-        style={{ boxShadow: '0 0 40px rgba(239,68,68,0.06)' }}>
-        <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl" style={{ background: 'linear-gradient(180deg, #ef4444, #f59e0b)' }} />
-        <div className="pl-4">
-          <h1 className="text-lg font-bold text-white flex items-center gap-2">
-            <ShieldAlert className="w-5 h-5 text-red-400" /> Risk Analytics
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">Aggregate risk distribution and compliance scoring across all {bidders.length} registered bidders</p>
-        </div>
+      {/* Header */}
+      <div className="card px-6 py-5" style={{ borderLeft: '4px solid #ef4444' }}>
+        <h1 className="text-lg font-bold flex items-center gap-2" style={{ color: '#111827' }}>
+          <ShieldAlert className="w-5 h-5 text-red-500" /> Risk Analytics
+        </h1>
+        <p className="text-xs mt-0.5" style={{ color: '#9ca3af' }}>
+          Aggregate risk distribution and compliance scoring across all {bidders.length} registered bidders
+        </p>
       </div>
 
-      {/* ── Risk Distribution KPIs ── */}
+      {/* Risk Distribution KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-fade-up" style={{ animationDelay: '60ms' }}>
         {Object.entries(RISK_META).map(([level, meta]) => (
-          <div key={level} className="glass rounded-2xl p-5 relative overflow-hidden group"
-            style={{ boxShadow: `0 0 30px ${meta.color}15` }}>
-            <div className="absolute -right-3 -top-3 w-14 h-14 rounded-full blur-xl opacity-20 group-hover:opacity-35 transition-opacity"
-              style={{ background: meta.color }} />
-            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">{meta.label}</div>
+          <div key={level} className="card p-5" style={{ borderTop: `3px solid ${meta.color}` }}>
+            <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: '#9ca3af' }}>{meta.label}</div>
             <div className="text-4xl font-black" style={{ color: meta.color }}>{counts[level] || 0}</div>
-            <div className="text-xs text-slate-600 mt-1">
+            <div className="text-xs mt-1" style={{ color: '#9ca3af' }}>
               {bidders.length > 0 ? ((counts[level] || 0) / bidders.length * 100).toFixed(0) : 0}% of bidders
             </div>
-            {/* Mini bar */}
-            <div className="mt-3 h-1 rounded-full bg-white/5 overflow-hidden">
-              <div className="h-full rounded-full transition-all" style={{
-                width: `${bidders.length > 0 ? (counts[level] || 0) / bidders.length * 100 : 0}%`,
-                background: meta.color
-              }} />
+            <div className="mt-3 h-1.5 rounded-full progress-track overflow-hidden">
+              <div style={{ width: `${bidders.length > 0 ? (counts[level] || 0) / bidders.length * 100 : 0}%`, background: meta.color, height: '100%', borderRadius: '999px' }} />
             </div>
           </div>
         ))}
       </div>
 
-      {/* ── Average score banner ── */}
-      <div className="glass rounded-2xl px-6 py-4 flex items-center justify-between animate-fade-up" style={{ animationDelay: '100ms' }}>
+      {/* Average Score Banner */}
+      <div className="card px-6 py-4 flex items-center justify-between animate-fade-up" style={{ animationDelay: '100ms' }}>
         <div>
-          <div className="text-xs text-slate-500 mb-0.5">Portfolio Average Compliance Score</div>
-          <div className="text-3xl font-black text-white">{avgScore}<span className="text-sm font-normal text-slate-500">/100</span></div>
+          <div className="text-xs mb-0.5" style={{ color: '#9ca3af' }}>Portfolio Average Compliance Score</div>
+          <div className="text-3xl font-black" style={{ color: '#111827' }}>
+            {avgScore}<span className="text-sm font-normal" style={{ color: '#9ca3af' }}>/100</span>
+          </div>
         </div>
         <div className="flex items-center gap-2 text-sm font-semibold">
           {avgScore >= 70
-            ? <><TrendingUp className="w-5 h-5 text-emerald-400" /><span className="text-emerald-400">Healthy Portfolio</span></>
-            : <><TrendingDown className="w-5 h-5 text-red-400" /><span className="text-red-400">Needs Attention</span></>}
+            ? <><TrendingUp className="w-5 h-5 text-green-500" /><span style={{ color: '#15803d' }}>Healthy Portfolio</span></>
+            : <><TrendingDown className="w-5 h-5 text-red-500" /><span style={{ color: '#991b1b' }}>Needs Attention</span></>}
         </div>
       </div>
 
-      {/* ── Charts Row ── */}
+      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
-        {/* Score distribution bar */}
-        <div className="glass rounded-2xl p-5 animate-fade-up" style={{ animationDelay: '140ms' }}>
-          <h2 className="text-sm font-bold text-white mb-4">Compliance Score Distribution</h2>
+        <div className="card p-5 animate-fade-up" style={{ animationDelay: '140ms' }}>
+          <h2 className="text-sm font-bold mb-4" style={{ color: '#111827' }}>Compliance Score Distribution</h2>
           <div className="h-52">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={scoreDistribution} barCategoryGap="35%">
-                <XAxis dataKey="range" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                <Tooltip content={<GlassTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+                <XAxis dataKey="range" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip content={<LightTooltip />} cursor={{ fill: 'rgba(59,130,246,0.04)' }} />
                 <Bar dataKey="count" name="Bidders" radius={[6, 6, 0, 0]}>
-                  {scoreDistribution.map((d, i) => <Cell key={i} fill={d.color} opacity={0.85} />)}
+                  {scoreDistribution.map((d, i) => <Cell key={i} fill={d.color} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Radar — rule category health */}
-        <div className="glass rounded-2xl p-5 animate-fade-up" style={{ animationDelay: '180ms' }}>
-          <h2 className="text-sm font-bold text-white mb-4">Rule Category Health</h2>
+        <div className="card p-5 animate-fade-up" style={{ animationDelay: '180ms' }}>
+          <h2 className="text-sm font-bold mb-4" style={{ color: '#111827' }}>Rule Category Health</h2>
           <div className="h-52">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radarData}>
-                <PolarGrid stroke="rgba(255,255,255,0.06)" />
-                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: '#64748b' }} />
-                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 9, fill: '#475569' }} />
-                <Radar name="Health Score" dataKey="score" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.18} strokeWidth={2} />
-                <Tooltip content={<GlassTooltip />} />
+                <PolarGrid stroke="#e5e7eb" />
+                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: '#9ca3af' }} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 9, fill: '#d1d5db' }} />
+                <Radar name="Health Score" dataKey="score" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.12} strokeWidth={2} />
+                <Tooltip content={<LightTooltip />} />
               </RadarChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* ── Bidder Risk Leaderboard ── */}
-      <div className="glass rounded-2xl p-5 animate-fade-up" style={{ animationDelay: '220ms' }}>
+      {/* Bidder Risk Leaderboard */}
+      <div className="card p-5 animate-fade-up" style={{ animationDelay: '220ms' }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-bold text-white">Bidder Risk Leaderboard <span className="text-slate-600 font-normal text-xs">(sorted by score, lowest first)</span></h2>
-          <span className="text-xs text-slate-600">{bidders.length} bidders</span>
+          <h2 className="text-sm font-bold" style={{ color: '#111827' }}>
+            Bidder Risk Leaderboard <span className="font-normal text-xs" style={{ color: '#9ca3af' }}>(sorted by score, lowest first)</span>
+          </h2>
+          <span className="text-xs" style={{ color: '#9ca3af' }}>{bidders.length} bidders</span>
         </div>
         <div className="space-y-2">
           {sorted.map((b, i) => {
@@ -179,48 +169,39 @@ export default function RiskAnalytics({ setCurrentTab, setActiveBidderId }) {
             return (
               <button
                 key={b.id}
-                onClick={() => { setActiveBidderId(b.id); setCurrentTab('bidder-profile'); }}
-                className="w-full flex items-center gap-4 p-3 rounded-xl text-left transition-all group"
-                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; }}
+                onClick={() => {
+                  go('bidder-detail', { bidderId: b.id, bidderName: b.company_name });
+                }}
+                className="w-full flex items-center gap-4 p-3 rounded-xl text-left transition-all"
+                style={{ background: '#f7f8fa', border: '1px solid #e5e7eb' }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#f0f2f5'; e.currentTarget.style.borderColor = '#d1d5db'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#f7f8fa'; e.currentTarget.style.borderColor = '#e5e7eb'; }}
               >
-                {/* Rank */}
-                <span className="text-xs font-bold text-slate-700 w-5 shrink-0 text-right">{i + 1}</span>
-
-                {/* Risk dot */}
+                <span className="text-xs font-bold w-5 shrink-0 text-right" style={{ color: '#d1d5db' }}>{i + 1}</span>
                 <div className="w-2 h-2 rounded-full shrink-0" style={{ background: meta.color }} />
-
-                {/* Company name */}
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-semibold text-white truncate">{b.company_name}</div>
-                  <div className="text-[10px] text-slate-600 truncate font-mono">{b.id} · {b.pan || '—'}</div>
+                  <div className="text-xs font-semibold truncate" style={{ color: '#111827' }}>{b.company_name}</div>
+                  <div className="text-[10px] truncate font-mono" style={{ color: '#9ca3af' }}>{b.id} · {b.pan || '—'}</div>
                 </div>
-
-                {/* Score bar */}
                 <div className="w-32 shrink-0">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] text-slate-500">Score</span>
+                    <span className="text-[10px]" style={{ color: '#9ca3af' }}>Score</span>
                     <span className="text-xs font-bold" style={{ color: meta.color }}>{pct.toFixed(0)}</span>
                   </div>
-                  <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-                    <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: meta.color }} />
+                  <div className="h-1.5 rounded-full progress-track overflow-hidden">
+                    <div style={{ width: `${pct}%`, background: meta.color, height: '100%', borderRadius: '999px' }} />
                   </div>
                 </div>
-
-                {/* Risk badge */}
                 <span className="text-[10px] font-bold px-2 py-1 rounded-full shrink-0"
-                  style={{ background: meta.bg, border: `1px solid ${meta.border}`, color: meta.color }}>
+                  style={{ background: meta.bg, border: `1px solid ${meta.border}`, color: meta.text }}>
                   {b.risk_level}
                 </span>
-
-                <ArrowRight className="w-3.5 h-3.5 text-slate-700 group-hover:text-slate-400 transition shrink-0" />
+                <ArrowRight className="w-3.5 h-3.5 shrink-0" style={{ color: '#d1d5db' }} />
               </button>
             );
           })}
-
           {bidders.length === 0 && (
-            <div className="text-center py-12 text-slate-600">
+            <div className="text-center py-12" style={{ color: '#9ca3af' }}>
               <AlertTriangle className="w-8 h-8 mx-auto mb-2 opacity-30" />
               <p>No bidders registered yet.</p>
             </div>
@@ -228,28 +209,26 @@ export default function RiskAnalytics({ setCurrentTab, setActiveBidderId }) {
         </div>
       </div>
 
-      {/* ── Flags Summary ── */}
+      {/* Flags Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-up" style={{ animationDelay: '260ms' }}>
         {[
-          { label: 'Bidders Needing Immediate Action', count: counts.HIGH, icon: AlertTriangle, color: '#ef4444', desc: 'HIGH risk — critical discrepancies found' },
-          { label: 'Bidders Under Review', count: counts.MEDIUM, icon: ShieldAlert, color: '#f59e0b', desc: 'MEDIUM risk — flagged for officer review' },
-          { label: 'Fully Compliant Bidders', count: counts.LOW, icon: CheckCircle2, color: '#10b981', desc: 'LOW risk — all checks passed' },
-        ].map((item, i) => {
-          const Icon = item.icon;
-          return (
-            <div key={i} className="glass rounded-2xl p-5" style={{ boxShadow: `0 0 25px ${item.color}10` }}>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 rounded-xl" style={{ background: `${item.color}15`, border: `1px solid ${item.color}25` }}>
-                  <Icon className="w-4 h-4" style={{ color: item.color }} />
-                </div>
-                <span className="text-xs font-semibold text-slate-400">{item.label}</span>
+          { label: 'Bidders Needing Immediate Action', count: counts.HIGH, Icon: AlertTriangle, color: '#dc2626', bg: '#fef2f2', border: '#fecaca', text: '#991b1b', desc: 'HIGH risk — critical discrepancies found' },
+          { label: 'Bidders Under Review',              count: counts.MEDIUM, Icon: ShieldAlert, color: '#d97706', bg: '#fffbeb', border: '#fde68a', text: '#92400e', desc: 'MEDIUM risk — flagged for officer review' },
+          { label: 'Fully Compliant Bidders',           count: counts.LOW, Icon: CheckCircle2, color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', text: '#15803d', desc: 'LOW risk — all checks passed' },
+        ].map((item, i) => (
+          <div key={i} className="card p-5" style={{ borderTop: `3px solid ${item.color}` }}>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 rounded-xl" style={{ background: item.bg, border: `1px solid ${item.border}` }}>
+                <item.Icon className="w-4 h-4" style={{ color: item.color }} />
               </div>
-              <div className="text-4xl font-black mb-1" style={{ color: item.color }}>{item.count}</div>
-              <div className="text-[10px] text-slate-600">{item.desc}</div>
+              <span className="text-xs font-semibold" style={{ color: '#374151' }}>{item.label}</span>
             </div>
-          );
-        })}
+            <div className="text-4xl font-black mb-1" style={{ color: item.color }}>{item.count}</div>
+            <div className="text-[10px]" style={{ color: '#9ca3af' }}>{item.desc}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
+
