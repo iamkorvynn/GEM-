@@ -73,6 +73,26 @@ class GSTVerificationAdapter(BaseVerificationAdapter):
             "address": "Sector 4, MIDC Industrial Area, Pune, Maharashtra 411026",
             "filing_status_gstr3b": "UP_TO_DATE"
         },
+        "27SOLAR1234S1Z4": {
+            "gstin": "27SOLAR1234S1Z4",
+            "legal_name": "Solaria Energy Grid Pvt. Ltd.",
+            "trade_name": "Solaria Energy",
+            "registration_status": "ACTIVE",
+            "taxpayer_type": "Regular",
+            "registration_date": "2017-06-18",
+            "address": "Sector 10, MIDC Industrial Area, Pune, Maharashtra 411018",
+            "filing_status_gstr3b": "UP_TO_DATE"
+        },
+        "07VIKAS4321P1ZA": {
+            "gstin": "07VIKAS4321P1ZA",
+            "legal_name": "Vikas Solar Power Solutions",
+            "trade_name": "Vikas Solar",
+            "registration_status": "ACTIVE",
+            "taxpayer_type": "Regular",
+            "registration_date": "2020-11-20",
+            "address": "Okhla Phase I, New Delhi 110020",
+            "filing_status_gstr3b": "UP_TO_DATE"
+        },
         # --- Tender 2 (Medical Equipment) ---
         "27MEDTC1234A1Z5": {
             "gstin": "27MEDTC1234A1Z5",
@@ -209,6 +229,20 @@ class PANVerificationAdapter(BaseVerificationAdapter):
             "status": "VALID",
             "aadhaar_seeding": "NOT_APPLICABLE"
         },
+        "SOLAR1234S": {
+            "pan": "SOLAR1234S",
+            "name": "SOLARIA ENERGY GRID PVT. LTD.",
+            "category": "Company",
+            "status": "VALID",
+            "aadhaar_seeding": "NOT_APPLICABLE"
+        },
+        "VIKAS4321P": {
+            "pan": "VIKAS4321P",
+            "name": "VIKAS SOLAR POWER SOLUTIONS",
+            "category": "Proprietorship",
+            "status": "VALID",
+            "aadhaar_seeding": "NOT_APPLICABLE"
+        },
         # --- Tender 2 ---
         "MEDTC1234A": {
             "pan": "MEDTC1234A",
@@ -338,6 +372,14 @@ class UdyamVerificationAdapter(BaseVerificationAdapter):
             "major_activity": "Manufacturing",
             "status": "ACTIVE",
             "nic_code": "32909 - Manufacture of safety equipment"
+        },
+        "UDYAM-MH-03-0098124": {
+            "udyam_number": "UDYAM-MH-03-0098124",
+            "enterprise_name": "Solaria Energy Grid Pvt. Ltd.",
+            "enterprise_type": "SMALL",
+            "major_activity": "Manufacturing",
+            "status": "ACTIVE",
+            "nic_code": "35106 - Manufacture of solar energy"
         }
     }
 

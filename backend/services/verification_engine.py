@@ -241,6 +241,18 @@ MCA21_DATABASE = {
         "incorporation_date": "2018-05-12",
         "directors": ["Anand Shah", "Meera Sen"],
     },
+    "SOLAR1234S": {
+        "pan": "SOLAR1234S",
+        "company_name": "Solaria Energy Grid Pvt. Ltd.",
+        "incorporation_date": "2017-06-18",
+        "directors": ["Rahul Deshmukh", "Pooja Patil"],
+    },
+    "VIKAS4321P": {
+        "pan": "VIKAS4321P",
+        "company_name": "Vikas Solar Power Solutions",
+        "incorporation_date": "2020-11-20",
+        "directors": ["Vikas Bansal"],
+    },
 }
 
 def track_c_correlation(

@@ -52,6 +52,9 @@ def seed_database(db: Session):
     # ── 4. Seed Tender 3: Secured Campus Cloud & Datacenter ───────────────
     _seed_tender_3(db)
 
+    # ── 5. Seed Tender 4: Grid-Connected Solar Rooftop Power Plants ───────
+    _seed_tender_4(db)
+
     db.commit()
 
 
@@ -425,6 +428,198 @@ def _seed_tender_3(db: Session):
         details=f"Tender {tender_id} initialized with 8 cloud/datacenter criteria and 3 technical bids.",
         timestamp=datetime.now(timezone.utc) - timedelta(days=1)
     ))
+    db.commit()
+
+
+# ===========================================================================
+# TENDER 4: Grid-Connected Solar Rooftop Power Plants (GEM/2026/B/102948)
+# ===========================================================================
+def _seed_tender_4(db: Session):
+    tender_id = "GEM/2026/B/102948"
+    tender = db.query(Tender).filter(Tender.id == tender_id).first()
+    if not tender:
+        tender = Tender(
+            id=tender_id,
+            title="Design, Supply, Installation, and Commissioning of Grid-Connected Solar Rooftop Power Plants",
+            department="Ministry of New and Renewable Energy / PSU Infrastructure Division",
+            description="Sealed bids for design, engineering, supply of solar PV modules, grid tie inverters, installation and commissioning of rooftop solar plants with 5-year comprehensive O&M at government buildings.",
+            created_date="2026-08-15",
+            deadline="2026-11-15",
+            estimated_cost="INR 8.5 Crores",
+            status="ACTIVE"
+        )
+        db.add(tender)
+        db.commit()
+
+    db.query(Requirement).filter(Requirement.tender_id == tender_id).delete()
+    reqs = [
+        Requirement(id="REQ-SOLAR-GST-001", tender_id=tender_id, title="GST Registration",
+            description="Active GSTIN registration certificate.", is_mandatory=True,
+            evidence_type="GST Certificate", verification_source="GST", rule_type="ACTIVE",
+            clause_reference="Clause 2.1"),
+        Requirement(id="REQ-SOLAR-PAN-001", tender_id=tender_id, title="PAN Card Verification",
+            description="Valid PAN entity registration.", is_mandatory=True,
+            evidence_type="PAN Card", verification_source="PAN", rule_type="VALID",
+            clause_reference="Clause 2.2"),
+        Requirement(id="REQ-SOLAR-OEM-001", tender_id=tender_id, title="Solar PV Module Tier-1 OEM Authorization",
+            description="Tier-1 OEM manufacturer authorization certificate for PV modules.", is_mandatory=True,
+            evidence_type="OEM Authorization", verification_source="OEM Registry", rule_type="REQUIRED",
+            clause_reference="Clause 4.1"),
+        Requirement(id="REQ-SOLAR-MII-001", tender_id=tender_id, title="Make in India Local Content Declaration (60%)",
+            description="Minimum 60% local content requirement for solar PV modules under ALMM list.", is_mandatory=True,
+            evidence_type="Make in India Declaration", verification_source="Make in India",
+            rule_type="THRESHOLD", threshold_value="60", clause_reference="Clause 5.2"),
+        Requirement(id="REQ-SOLAR-DEBAR-001", tender_id=tender_id, title="Non-Blacklisting & Debarment Declaration",
+            description="Declaration confirming no debarment by MNRE or any government agency.", is_mandatory=True,
+            evidence_type="Debarment Declaration", verification_source="Debarment DB",
+            rule_type="EXACT_MATCH", clause_reference="Clause 6.1"),
+    ]
+    db.add_all(reqs)
+    db.commit()
+
+    # Bidders for Tender 4
+    bidders_data = [
+        {
+            "id": "BID-SOLAR-01", "tender_id": tender_id,
+            "company_name": "Solaria Energy Grid Pvt. Ltd.",
+            "gstin": "27SOLAR1234S1Z4", "pan": "SOLAR1234S",
+            "udyam_id": "UDYAM-MH-03-0098124", "company_type": "Pvt Ltd",
+            "incorporation_date": "2017-06-18", "claims_msme": True,
+            "local_content_pct": 65.0, "compliance_score": 94.0, "risk_level": "LOW",
+            "verification_progress": 100.0, "overall_status": "VERIFIED"
+        },
+        {
+            "id": "BID-SOLAR-02", "tender_id": tender_id,
+            "company_name": "Vikas Solar Power Solutions",
+            "gstin": "07VIKAS4321P1ZA", "pan": "VIKAS4321P",
+            "udyam_id": None, "company_type": "Proprietorship",
+            "incorporation_date": "2020-11-20", "claims_msme": False,
+            "local_content_pct": 45.0, "compliance_score": 52.0, "risk_level": "HIGH",
+            "verification_progress": 100.0, "overall_status": "REVIEW_REQUIRED"
+        }
+    ]
+
+    for bd in bidders_data:
+        b = db.query(Bidder).filter(Bidder.id == bd["id"]).first()
+        if not b:
+            b = Bidder(**bd)
+            db.add(b)
+        else:
+            for k, v in bd.items():
+                setattr(b, k, v)
+        db.commit()
+
+        if bd["id"] == "BID-SOLAR-01":
+            _seed_bidder_solar1(db, b)
+        elif bd["id"] == "BID-SOLAR-02":
+            _seed_bidder_solar2(db, b)
+
+    db.add(AuditEvent(
+        tender_id=tender_id, action="TENDER_INITIALIZED", actor="Procurement Officer",
+        source="GeM Evaluation Engine", result="SUCCESS",
+        details=f"Tender {tender_id} seeded with solar requirements and 2 mock bidders.",
+        timestamp=datetime.now(timezone.utc) - timedelta(days=1)
+    ))
+    db.commit()
+
+
+def _seed_bidder_solar1(db: Session, b: Bidder):
+    _clear_bidder_children(db, b.id)
+
+    d1 = Document(id="DOC-SOLAR1-GST", bidder_id=b.id, file_name="Solaria_GST_Certificate.pdf",
+        file_path="/mock_docs/Solaria_GST_Certificate.pdf", file_size=820000,
+        classified_type="GST Certificate", doc_type="TAX_CERTIFICATE",
+        classification_confidence=0.98, status="CONFIRMED",
+        extracted_fields=json.dumps({"gstin": "27SOLAR1234S1Z4", "legal_name": "Solaria Energy Grid Pvt. Ltd.", "filing_status": "UP_TO_DATE", "certificate_date": "2026-08-01"}),
+        confirmed_fields=json.dumps({"gstin": "27SOLAR1234S1Z4", "legal_name": "Solaria Energy Grid Pvt. Ltd.", "filing_status": "UP_TO_DATE", "certificate_date": "2026-08-01"}),
+        confirmed_by="procurement.officer@demo.gov.in", confirmed_at=datetime.now(timezone.utc))
+
+    d2 = Document(id="DOC-SOLAR1-OEM", bidder_id=b.id, file_name="Solaria_OEM_Authorization.pdf",
+        file_path="/mock_docs/Solaria_OEM_Authorization.pdf", file_size=740000,
+        classified_type="OEM Authorization", doc_type="OEM_AUTH_LETTER",
+        classification_confidence=0.96, status="CONFIRMED",
+        extracted_fields=json.dumps({"issuing_entity": "Tata Power Solar Systems", "authorized_entity": "Solaria Energy Grid Pvt. Ltd.", "product_category": "Solar PV Modules", "issue_date": "2024-03-10", "expiry_date": "2029-12-31", "signature_present": True}),
+        confirmed_fields=json.dumps({"issuing_entity": "Tata Power Solar Systems", "authorized_entity": "Solaria Energy Grid Pvt. Ltd.", "product_category": "Solar PV Modules", "issue_date": "2024-03-10", "expiry_date": "2029-12-31", "signature_present": True}),
+        confirmed_by="procurement.officer@demo.gov.in", confirmed_at=datetime.now(timezone.utc))
+    
+    db.add_all([d1, d2])
+    db.commit()
+
+    db.add_all([
+        VerificationCheck(id=f"CHK-EX-GST-{b.id}", bidder_id=b.id, check_type="EXACT", module="GSTIN_VALIDITY", result="PASS",
+            reason=f"GSTIN '{b.gstin}' active on GST portal and GSTR-3B filings up to date",
+            source_fields=json.dumps({"doc_gstin": b.gstin, "registry_status": "ACTIVE"})),
+        VerificationCheck(id=f"CHK-EX-PAN-{b.id}", bidder_id=b.id, check_type="EXACT", module="PAN_MATCH", result="PASS",
+            reason=f"PAN '{b.pan}' matches legal entity name on Income Tax registry",
+            source_fields=json.dumps({"pan": b.pan, "registry_name": b.company_name})),
+    ])
+
+    db.add_all([
+        ComplianceRuleResult(bidder_id=b.id, requirement_id="REQ-SOLAR-GST-001", requirement_title="GST Registration",
+            status="VERIFIED", extracted_value="27SOLAR1234S1Z4", verified_value="Active",
+            verification_source="GST", confidence=0.98, evidence_doc_id=d1.id, evidence_file_name=d1.file_name,
+            rule_explanation="GSTIN active and legal name matches submission exactly."),
+        ComplianceRuleResult(bidder_id=b.id, requirement_id="REQ-SOLAR-OEM-001", requirement_title="Solar PV Module Tier-1 OEM Authorization",
+            status="VERIFIED", extracted_value="Valid till 2029-12-31", verified_value="VERIFIED",
+            verification_source="OEM Registry", confidence=0.96, evidence_doc_id=d2.id, evidence_file_name=d2.file_name,
+            rule_explanation="Valid OEM authorization. Issue date after incorporation — consistent."),
+    ])
+
+    db.add(AIFinding(bidder_id=b.id, title="Verified: Fully Compliant",
+        severity="VERIFIED", description="Solaria satisfies all criteria with no deviations or risk markers.",
+        document_value=b.company_name, verified_value="Fully Compliant",
+        source="Evaluation Module", confidence=0.97, recommendation="QUALIFY bidder."))
+
+    db.add(RiskAssessment(bidder_id=b.id, compliance_score=94.0, risk_level="LOW",
+        critical_issues_count=0, medium_issues_count=0,
+        score_breakdown_json=json.dumps({"GST": 20, "PAN": 20, "OEM": 20, "Debarment": 20, "MII": 14}),
+        reasons_json=json.dumps(["All checks passed.", "Document signatures verified."])))
+    db.commit()
+
+
+def _seed_bidder_solar2(db: Session, b: Bidder):
+    _clear_bidder_children(db, b.id)
+
+    d1 = Document(id="DOC-SOLAR2-GST", bidder_id=b.id, file_name="Vikas_GST_Certificate.pdf",
+        file_path="/mock_docs/Vikas_GST_Certificate.pdf", file_size=780000,
+        classified_type="GST Certificate", doc_type="TAX_CERTIFICATE",
+        classification_confidence=0.95, status="CONFIRMED",
+        extracted_fields=json.dumps({"gstin": "07VIKAS4321P1ZA", "legal_name": "Vikas Solar Power Solutions", "filing_status": "UP_TO_DATE", "certificate_date": "2026-08-10"}),
+        confirmed_fields=json.dumps({"gstin": "07VIKAS4321P1ZA", "legal_name": "Vikas Solar Power Solutions", "filing_status": "UP_TO_DATE", "certificate_date": "2026-08-10"}),
+        confirmed_by="procurement.officer@demo.gov.in", confirmed_at=datetime.now(timezone.utc))
+
+    db.add(d1)
+    db.commit()
+
+    db.add_all([
+        VerificationCheck(id=f"CHK-EX-GST-{b.id}", bidder_id=b.id, check_type="EXACT", module="GSTIN_VALIDITY", result="PASS",
+            reason=f"GSTIN '{b.gstin}' active on GST portal",
+            source_fields=json.dumps({"doc_gstin": b.gstin, "registry_status": "ACTIVE"})),
+        VerificationCheck(id=f"CHK-EX-PAN-{b.id}", bidder_id=b.id, check_type="EXACT", module="PAN_MATCH", result="PASS",
+            reason=f"PAN '{b.pan}' matches legal name on Income Tax registry",
+            source_fields=json.dumps({"pan": b.pan, "registry_name": b.company_name})),
+    ])
+
+    db.add_all([
+        ComplianceRuleResult(bidder_id=b.id, requirement_id="REQ-SOLAR-GST-001", requirement_title="GST Registration",
+            status="VERIFIED", extracted_value="07VIKAS4321P1ZA", verified_value="Active",
+            verification_source="GST", confidence=0.95, evidence_doc_id=d1.id, evidence_file_name=d1.file_name,
+            rule_explanation="GSTIN active and legal name matches submission exactly."),
+        ComplianceRuleResult(bidder_id=b.id, requirement_id="REQ-SOLAR-MII-001", requirement_title="Make in India Local Content Declaration (60%)",
+            status="FAILED", extracted_value="45%", verified_value="45% (Below 60% threshold)",
+            verification_source="Make in India", confidence=0.90, evidence_doc_id=None, evidence_file_name=None,
+            rule_explanation="Local content of 45% is below the required 60% local content requirement."),
+    ])
+
+    db.add(AIFinding(bidder_id=b.id, title="CRITICAL: Local Content below threshold",
+        severity="CRITICAL", description="Make in India declaration shows 45% local content, which is below the mandatory 60% threshold for solar modules.",
+        document_value="45%", verified_value="Non-Compliant",
+        source="MII Evaluation", confidence=0.92, recommendation="DISQUALIFY bidder."))
+
+    db.add(RiskAssessment(bidder_id=b.id, compliance_score=52.0, risk_level="HIGH",
+        critical_issues_count=1, medium_issues_count=0,
+        score_breakdown_json=json.dumps({"GST": 20, "PAN": 20, "OEM": 0, "Debarment": 12, "MII": 0}),
+        reasons_json=json.dumps(["CRITICAL: Make in India local content below 60% threshold.", "Missing OEM authorization letter."])))
     db.commit()
 
 
